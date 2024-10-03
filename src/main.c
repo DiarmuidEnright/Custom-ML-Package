@@ -19,9 +19,5 @@ int main() {
     double prediction = svm_predict(svm_model, X_test[0]);
     printf("SVM Prediction: %lf\n", prediction);
     svm_free(svm_model);
-
-    // Other models (k-NN, Decision Tree)
-    // Add more code for training and testing other models
-
     return 0;
 }
