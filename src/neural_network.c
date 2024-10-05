@@ -1,15 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
-typedef struct {
-    int input_size;
-    int hidden_size;
-    int output_size;
-    double *weights_input_hidden;
-    double *weights_hidden_output;
-    double learning_rate;
-} NeuralNetwork;
+#include "neural_network.h"
 
 double sigmoid(double x) {
     return 1.0 / (1.0 + exp(-x));
@@ -53,4 +45,10 @@ void forward(NeuralNetwork *network, double *input, double *hidden, double *outp
         }
         output[i] = sigmoid(output[i]);
     }
+}
+
+void free_neural_network(NeuralNetwork *network) {
+    free(network->weights_input_hidden);
+    free(network->weights_hidden_output);
+    free(network);
 }
