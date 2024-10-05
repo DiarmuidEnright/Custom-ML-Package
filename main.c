@@ -106,67 +106,6 @@ int main() {
     }
     free(pca->components);
     free(pca);
-
-    printf("\nGrid Search Example:\n");
-    int param1_values[3] = {1, 2, 3};
-    int param2_values[3] = {4, 5, 6};
-    GridSearchResult best_result = grid_search(param1_values, param2_values, 3, 3);
-    printf("Best Hyperparameters: param1 = %d, param2 = %d, score = %f\n", best_result.param1, best_result.param2, best_result.score);
-
-    printf("\nDataset Management Example:\n");
-    size_t n_samples_loaded, n_features_loaded;
-    double **dataset = load_dataset("data.csv", &n_samples_loaded, &n_features_loaded);
-    print_dataset(dataset, n_samples_loaded, n_features_loaded);
-    free_dataset(dataset, n_samples_loaded);
-
-    printf("\nDecision Tree Example:\n");
-    DecisionTree *tree = create_decision_tree();
-    train_decision_tree(tree, dataset);
-    print_decision_tree(tree);
-    free_decision_tree(tree);
-
-    printf("\nGradient Boosting Example:\n");
-    GradientBoosting *gb = create_gradient_boosting();
-    train_gradient_boosting(gb, dataset);
-    print_gradient_boosting(gb);
-    free_gradient_boosting(gb);
-
-    printf("\nk-Nearest Neighbors Example:\n");
-    KNN *knn = create_knn(3);
-    train_knn(knn, dataset);
-    double knn_prediction = predict_knn(knn, input);
-    printf("k-NN Prediction: %f\n", knn_prediction);
-    free_knn(knn);
-
-    printf("\nLogistic Regression Example:\n");
-    LogisticRegression *log_reg = create_logistic_regression();
-    train_logistic_regression(log_reg, dataset);
-    double log_reg_prediction = predict_logistic_regression(log_reg, input);
-    printf("Logistic Regression Prediction: %f\n", log_reg_prediction);
-    free_logistic_regression(log_reg);
-
-    printf("\nRandom Forest Example:\n");
-    RandomForest *rf = create_random_forest(100);
-    train_random_forest(rf, dataset);
-    double rf_prediction = predict_random_forest(rf, input);
-    printf("Random Forest Prediction: %f\n", rf_prediction);
-    free_random_forest(rf);
-
-    printf("\nSupport Vector Machine Example:\n");
-    SVM *svm = create_svm();
-    train_svm(svm, dataset);
-    double svm_prediction = predict_svm(svm, input);
-    printf("SVM Prediction: %f\n", svm_prediction);
-    free_svm(svm);
-
-    printf("\nPreprocessing Example:\n");
-    normalize_dataset(dataset, n_samples_loaded, n_features_loaded);
-    print_dataset(dataset, n_samples_loaded, n_features_loaded);
-
-    printf("\nUtilities Example:\n");
-    double mean = calculate_mean(input, input_size);
-    printf("Mean of input: %f\n", mean);
-
     free(nn->weights_input_hidden);
     free(nn->weights_hidden_output);
     free(nn);
