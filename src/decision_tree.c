@@ -1,14 +1,7 @@
 #include "decision_tree.h"
 #include <stdio.h>
 #include <float.h>
-
-typedef struct TreeNode {
-    size_t feature_idx;
-    double threshold;
-    double value;
-    struct TreeNode *left;
-    struct TreeNode *right;
-} TreeNode;
+#include <stdlib.h>
 
 static double gini_index(double **X, double *y, size_t n_samples, size_t *left_indices, size_t left_size, size_t *right_indices, size_t right_size) {
     double gini = 0.0;
@@ -84,7 +77,7 @@ static TreeNode* create_leaf_node(double *y, size_t *indices, size_t n_samples) 
     TreeNode *leaf = (TreeNode *)malloc(sizeof(TreeNode));
     leaf->left = NULL;
     leaf->right = NULL;
-    
+
     size_t class_counts[2] = {0, 0};
     for (size_t i = 0; i < n_samples; i++) {
         class_counts[(int)y[indices[i]]]++;
