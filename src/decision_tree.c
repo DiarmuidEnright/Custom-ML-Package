@@ -1,5 +1,4 @@
 #include "decision_tree.h"
-#include <stdlib.h>
 #include <stdio.h>
 #include <float.h>
 
@@ -152,6 +151,10 @@ double decision_tree_predict(TreeNode *node, double *x) {
 
 DecisionTree* decision_tree_train(double **X, double *y, size_t n_samples, size_t n_features, size_t max_depth, size_t min_samples_split) {
     DecisionTree *tree = (DecisionTree *)malloc(sizeof(DecisionTree));
+    if (tree == NULL) {
+        // Handle memory allocation failure
+        return NULL;
+    }
     tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
     return tree;
 }

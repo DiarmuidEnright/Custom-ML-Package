@@ -1,4 +1,4 @@
-#include "logistic_regression.h"
+#include "logical_regression.h"
 #include <stdlib.h>
 #include <math.h>
 
