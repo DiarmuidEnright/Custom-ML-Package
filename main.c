@@ -7,7 +7,7 @@
 #include "decision_tree.h"
 #include "gradient_boosting.h"
 #include "knn.h"
-#include "logistic_regression.h"
+#include "logical_regression.h"
 #include "random_forest.h"
 #include "svm.h"
 #include "preprocess.h"
