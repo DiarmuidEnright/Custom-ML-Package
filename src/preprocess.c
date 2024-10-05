@@ -30,4 +30,14 @@ void standard_scaler(double **X, size_t n_samples, size_t n_features, double *me
         for (size_t j = 0; j < n_samples; j++) {
             stddev[i] += pow(X[j][i] - mean[i], 2);
         }
-       
+        stddev[i] = sqrt(stddev[i] / n_samples);
+
+        for (size_t j = 0; j < n_samples; j++) {
+            if (stddev[i] != 0) {
+                X[j][i] = (X[j][i] - mean[i]) / stddev[i];
+            } else {
+                X[j][i] = 0;
+            }
+        }
+    }
+}
