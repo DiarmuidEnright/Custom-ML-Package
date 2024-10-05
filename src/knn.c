@@ -14,6 +14,14 @@ typedef struct {
     size_t end;
 } knn_thread_data;
 
+double euclidean_distance(double *a, double *b, size_t n) {
+    double sum = 0.0;
+    for (size_t i = 0; i < n; i++) {
+        sum += (a[i] - b[i]) * (a[i] - b[i]);
+    }
+    return sqrt(sum);
+}
+
 void* knn_distance_thread(void *arg) {
     knn_thread_data *data = (knn_thread_data*)arg;
     for (size_t i = data->start; i < data->end; i++) {
@@ -24,6 +32,10 @@ void* knn_distance_thread(void *arg) {
 
 double knn_predict(kNN *model, double *x) {
     double *distances = (double*)malloc(model->n_samples * sizeof(double));
+    if (!distances) {
+        return -1;
+    }
+    
     pthread_t threads[MAX_THREADS];
     knn_thread_data thread_data[MAX_THREADS];
 
@@ -53,4 +65,12 @@ double knn_predict(kNN *model, double *x) {
 
     free(distances);
     return predicted_label;
+}
+
+void knn_free(kNN *model) {
+    if (model) {
+        free(model->X_train);
+        free(model->y_train);
+        free(model);
+    }
 }
