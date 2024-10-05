@@ -78,7 +78,7 @@ int main() {
 
     printf("PCA Example:\n");
     int n_samples = 5, n_features = 3;
-    double *data[5];
+    double **data = (double**)malloc(n_samples * sizeof(double*));
     for (int i = 0; i < n_samples; i++) {
         data[i] = (double*)malloc(n_features * sizeof(double));
         for (int j = 0; j < n_features; j++) {
@@ -99,6 +99,8 @@ int main() {
     for (int i = 0; i < n_samples; i++) {
         free(data[i]);
     }
+    free(data);
+    
     for (int i = 0; i < n_components; i++) {
         free(pca->components[i]);
     }
@@ -112,9 +114,10 @@ int main() {
     printf("Best Hyperparameters: param1 = %d, param2 = %d, score = %f\n", best_result.param1, best_result.param2, best_result.score);
 
     printf("\nDataset Management Example:\n");
-    Dataset *dataset = load_dataset("data.csv");
-    print_dataset(dataset);
-    free_dataset(dataset);
+    size_t n_samples_loaded, n_features_loaded;
+    double **dataset = load_dataset("data.csv", &n_samples_loaded, &n_features_loaded);
+    print_dataset(dataset, n_samples_loaded, n_features_loaded);
+    free_dataset(dataset, n_samples_loaded);
 
     printf("\nDecision Tree Example:\n");
     DecisionTree *tree = create_decision_tree();
@@ -157,11 +160,11 @@ int main() {
     free_svm(svm);
 
     printf("\nPreprocessing Example:\n");
-    normalize_dataset(dataset);
-    print_dataset(dataset);
+    normalize_dataset(dataset, n_samples_loaded, n_features_loaded);
+    print_dataset(dataset, n_samples_loaded, n_features_loaded);
 
     printf("\nUtilities Example:\n");
-    double mean = calculate_mean(input, 3);
+    double mean = calculate_mean(input, input_size);
     printf("Mean of input: %f\n", mean);
 
     free(nn->weights_input_hidden);
