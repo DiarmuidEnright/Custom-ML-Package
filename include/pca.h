@@ -1,8 +1,13 @@
 #ifndef PCA_H
 #define PCA_H
 
-#include <stdio.h>
+typedef struct {
+    double **components;
+    int n_components;
+} PCA;
 
-void perform_pca(double* data, int num_samples, int num_features, double* output);
+PCA* fit_pca(double **data, int n_samples, int n_features, int n_components);
+
+void free_pca(PCA *pca);
 
 #endif
