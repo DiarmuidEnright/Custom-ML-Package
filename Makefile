@@ -1,19 +1,25 @@
 CC = gcc
-CFLAGS = -Wall -lm -Iinclude
+CFLAGS = -Wall -Iinclude
 
-SRC = main.c pca.c grid_search.c dataset.c decision_tree.c gradient_boosting.c knn.c logical_regression.c random_forest.c svm.c preprocess.c utils.c
+SRC = main.c pca.c grid_search.c dataset.c decision_tree.c \
+      gradient_boosting.c knn.c logical_regression.c \
+      random_forest.c svm.c preprocess.c utils.c
+
 OBJ = $(SRC:.c=.o)
 TARGET = program
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ)
+	@echo "Linking..."
+	$(CC) -o $(TARGET) $(OBJ) -lm
 
 %.o: %.c
+	@echo "Compiling $<..."
 	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
+	@echo "Cleaning up..."
 	rm -f $(OBJ) $(TARGET)
 
 .PHONY: all clean
