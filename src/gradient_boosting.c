@@ -1,3 +1,4 @@
+#include "decision_tree.h"
 #include "gradient_boosting.h"
 #include <stdlib.h>
 #include <math.h>
