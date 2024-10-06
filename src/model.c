@@ -1,4 +1,5 @@
 #include "model.h"
+#include <stdio.h>
 
 void placeholder_train(Model *self, double **data, double *target, int n_samples, int n_features) {
     printf("Training a placeholder model...\n");
