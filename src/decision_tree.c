@@ -86,14 +86,12 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
 double majority_class(double *y, int n_samples) {
     double *counts = calloc(n_classes, sizeof(double));
     int i;
-
     for (i = 0; i < n_samples; i++) {
         counts[(size_t)y[i]]++;
     }
 
     double majority_class = 0.0;
     double max_count = 0.0;
-
     for (i = 0; i < n_classes; i++) {
         if (counts[i] > max_count) {
             max_count = counts[i];
@@ -103,10 +101,6 @@ double majority_class(double *y, int n_samples) {
 
     free(counts);
     return majority_class;
-}
-
-TreeNode* create_majority_class(double *y, int n_samples) {
-    return create_leaf_node(majority_class(y, n_samples));
 }
 
 TreeNode *create_leaf_node(double value) {
