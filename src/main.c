@@ -12,6 +12,8 @@
 #include "svm.h"
 #include "preprocess.h"
 #include "utils.h"
+#include "ensemble_methods.h"
+#include "cross_validation.c"
 
 typedef struct {
     int input_size;
