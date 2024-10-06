@@ -52,6 +52,26 @@ void decision_tree_train(Model *self, double **X, double *y, int n_samples, int 
     self->current_tree = tree;
 }
 
+double majority_class(double *y, int n_samples) {
+    double *counts = calloc(n_classes, sizeof(double));
+    int i;
+    for (i = 0; i < n_samples; i++) {
+        counts[(size_t)y[i]]++;
+    }
+
+    double majority_class = 0.0;
+    double max_count = 0.0;
+    for (i = 0; i < n_classes; i++) {
+        if (counts[i] > max_count) {
+            max_count = counts[i];
+            majority_class = i;
+        }
+    }
+
+    free(counts);
+    return majority_class;
+}
+
 TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_features, size_t depth, size_t max_depth, size_t min_samples_split) {
     if (depth >= max_depth || n_samples < min_samples_split) {
         return create_leaf_node(majority_class(y, n_samples));
