@@ -12,4 +12,4 @@ Forest* create_forest(int n_trees, int max_depth, int n_features, int n_samples,
 void free_forest(Forest *forest);
 double random_forest_predict(Forest *forest, double *x);
 
-#endif  // RANDOM_FOREST_H
+#endif
