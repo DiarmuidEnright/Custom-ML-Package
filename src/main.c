@@ -39,46 +39,6 @@ void initialize_weights(double *weights, int size) {
     }
 }
 
-void create_decision_tree() {
-    DecisionTreeNode* root = create_decision_tree_node(0, 1.5, 1);
-    printf("Created a decision tree with root feature index %d and threshold %f\n", root->feature_index, root->threshold);
-}
-
-typedef struct {
-    double* features;
-    int label;
-} DataPoint;
-
-void create_knn() {
-    printf("KNN model created.\n");
-    DataPoint dataset[3] = {
-        {(double[]){1.0, 2.0}, 0},
-        {(double[]){2.0, 1.0}, 0},
-        {(double[]){3.0, 4.0}, 1}
-    };
-    for (int i = 0; i < 3; i++) {
-        printf("DataPoint %d: (%f, %f) -> Class %d\n", i, dataset[i].features[0], dataset[i].features[1], dataset[i].label);
-    }
-}
-
-void create_svm() {
-    printf("SVM model created.\n");
-    printf("SVM training would occur here.\n");
-}
-
-typedef struct {
-    DecisionTreeNode* decision_tree;
-} Model;
-
-void free_model(Model* model) {
-    if (model->decision_tree) {
-        free(model->decision_tree);
-    }
-    free(model);
-}
-
-int n_classes = 2;
-
 NeuralNetwork* initialize_network(int input_size, int hidden_size, int output_size, double learning_rate) {
     NeuralNetwork *network = (NeuralNetwork*)malloc(sizeof(NeuralNetwork));
     if (network == NULL) {
