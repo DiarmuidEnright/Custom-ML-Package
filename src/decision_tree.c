@@ -5,8 +5,6 @@
 
 static double gini_index(double **X, double *y, size_t n_samples, size_t *left_indices, size_t left_size, size_t *right_indices, size_t right_size) {
     double gini = 0.0;
-    double left_gini = 0.0, right_gini = 0.0;
-
     double left_label_count[2] = {0, 0};
     double right_label_count[2] = {0, 0};
 
@@ -20,11 +18,11 @@ static double gini_index(double **X, double *y, size_t n_samples, size_t *left_i
 
     double left_prob_0 = left_label_count[0] / left_size;
     double left_prob_1 = left_label_count[1] / left_size;
-    left_gini = 1.0 - (left_prob_0 * left_prob_0 + left_prob_1 * left_prob_1);
+    double left_gini = 1.0 - (left_prob_0 * left_prob_0 + left_prob_1 * left_prob_1);
 
     double right_prob_0 = right_label_count[0] / right_size;
     double right_prob_1 = right_label_count[1] / right_size;
-    right_gini = 1.0 - (right_prob_0 * right_prob_0 + right_prob_1 * right_prob_1);
+    double right_gini = 1.0 - (right_prob_0 * right_prob_0 + right_prob_1 * right_prob_1);
 
     gini = (left_size / (double)n_samples) * left_gini + (right_size / (double)n_samples) * right_gini;
     return gini;
@@ -132,7 +130,7 @@ static TreeNode* build_tree(double **X, double *y, size_t n_samples, size_t n_fe
 
 double decision_tree_predict(TreeNode *node, double *x) {
     if (node->left == NULL && node->right == NULL) {
-        return node->value;  // Leaf node
+        return node->value;
     }
 
     if (x[node->feature_idx] < node->threshold) {
