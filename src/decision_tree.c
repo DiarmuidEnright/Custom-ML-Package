@@ -154,9 +154,12 @@ void decision_tree_train(Model *self, double **X, int n_samples, int n_features)
     free(y);
 }
 
-void decision_tree_free(DecisionTree *tree) {
-    free_tree(tree->root);
-    free(tree);
+void decision_tree_free(Model *self) {
+    if (self->tree != NULL) {
+        free_tree(self->tree->root);
+        free(self->tree);
+    }
+    free(self);
 }
 
 static void free_tree(TreeNode *node) {
