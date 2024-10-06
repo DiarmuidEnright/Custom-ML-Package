@@ -49,7 +49,7 @@ void decision_tree_train(Model *self, double **X, double *y, int n_samples, int 
     tree->max_depth = max_depth;
     tree->min_samples_split = min_samples_split;
     tree->root = decision_tree_create(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
-    self->tree = tree;
+    self->current_tree = tree;
 }
 
 TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_features, size_t depth, size_t max_depth, size_t min_samples_split) {
