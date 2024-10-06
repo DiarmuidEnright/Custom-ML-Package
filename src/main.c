@@ -125,7 +125,6 @@ int main() {
     double stacking_accuracy = model_evaluate(stacking_model, data);
     printf("Stacking Accuracy: %.2f\n", stacking_accuracy);
 
-    // Free resources
     for (int i = 0; i < n_samples; i++) {
         free(data[i]);
     }
