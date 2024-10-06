@@ -7,7 +7,7 @@ typedef struct {
     int num_models;
 } BaggingModel;
 
-void train_bagging(Model *self, double **data, int n_samples, int n_features) {
+void train_bagging(Model *self, double **data, double *target, int n_samples, int n_features, size_t sample_size, size_t num_features) {
     BaggingModel *bagging_model = (BaggingModel *)self;
     for (int i = 0; i < bagging_model->num_models; i++) {
         int *indices = (int *)malloc(n_samples * sizeof(int));
@@ -19,22 +19,27 @@ void train_bagging(Model *self, double **data, int n_samples, int n_features) {
         for (int j = 0; j < n_samples; j++) {
             bootstrap_sample[j] = data[indices[j]];
         }
-        bagging_model->models[i]->train(bagging_model->models[i], bootstrap_sample, n_samples, n_features);
+        bagging_model->models[i]->train(bagging_model->models[i], bootstrap_sample, target, n_samples, n_features, sample_size, num_features);
         
         free(bootstrap_sample);
         free(indices);
     }
 }
 
-double predict_bagging(Model *self, double *data, int n_features) {
+double predict_bagging(Model *self, double *data, int n_features, size_t sample_size) {
     BaggingModel *bagging_model = (BaggingModel *)self;
     double *predictions = (double *)malloc(bagging_model->num_models * sizeof(double));
 
     for (int i = 0; i < bagging_model->num_models; i++) {
-        predictions[i] = bagging_model->models[i]->predict(bagging_model->models[i], data, n_features);
+        predictions[i] = bagging_model->models[i]->predict(bagging_model->models[i], data, n_features, sample_size);
     }
 
     double final_prediction = 0.0;
+
+    for (int i = 0; i < bagging_model->num_models; i++) {
+        final_prediction += predictions[i];
+    }
+    final_prediction /= bagging_model->num_models;
 
     free(predictions);
     return final_prediction;
@@ -58,9 +63,8 @@ Model* bagging(Model **models, Dataset *data, int num_models) {
     }
 
     Model *model = (Model *)malloc(sizeof(Model));
-    model->train = train_bagging;
-    model->predict = predict_bagging;
+    model->train = (void (*)(Model *, double **, double *, int, int, size_t, size_t))train_bagging;
+    model->predict = (double (*)(Model *, double *, int, size_t))predict_bagging;
     model->free = (void (*)(Model *))free_bagging;
 
     return model;
-}
