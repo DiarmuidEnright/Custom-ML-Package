@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <float.h>
 #include <stdlib.h>
-#include "model.h"
 
 static double gini_index(double **X, double *y, size_t n_samples, size_t *left_indices, size_t left_size, size_t *right_indices, size_t right_size) {
     double gini = 0.0;
@@ -141,16 +140,22 @@ double decision_tree_predict(TreeNode *node, double *x) {
     }
 }
 
-static void decision_tree_train(Model *self, double **X, int n_samples, int n_features) {
-    DecisionTree *tree = (DecisionTree *)malloc(sizeof(DecisionTree));
-    if (tree == NULL) {
-        return;
+void decision_tree_train(Model *self, double **X, int n_samples, int n_features) {
+    double *y = (double *)malloc(n_samples * sizeof(double));
+    for (int i = 0; i < n_samples; i++) {
+        y[i] = X[i][0];
     }
-    tree->root = build_tree(X, NULL, n_samples, n_features, 0, 10, 2);
 
-    self->train = decision_tree_train;
-    self->predict = (double (*)(struct Model *, double *, int))decision_tree_predict;
-    self->free = free_model;
+    size_t max_depth = 10;
+    size_t min_samples_split = 2;
+
+    self->tree = decision_tree_train(X, y, n_samples, n_features, max_depth, min_samples_split);
+    free(y);
+}
+
+void decision_tree_free(DecisionTree *tree) {
+    free_tree(tree->root);
+    free(tree);
 }
 
 static void free_tree(TreeNode *node) {
@@ -159,27 +164,4 @@ static void free_tree(TreeNode *node) {
     free_tree(node->left);
     free_tree(node->right);
     free(node);
-}
-
-void decision_tree_free(DecisionTree *tree) {
-    free_tree(tree->root);
-    free(tree);
-}
-
-void free_model(Model *model) {
-    if (model) {
-        model->free(model);
-        free(model);
-    }
-}
-
-Model* create_decision_tree() {
-    Model *model = (Model *)malloc(sizeof(Model));
-    if (!model) return NULL;
-
-    model->train = decision_tree_train;
-    model->predict = (double (*)(struct Model *, double *, int))decision_tree_predict;
-    model->free = free_model;
-
-    return model;
 }
