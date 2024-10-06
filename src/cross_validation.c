@@ -44,9 +44,9 @@ void cross_validation(Model *model, Dataset *data, int k) {
         double train_ratio = (double)(fold_size * (k - 1)) / data->n_samples;
         split_dataset(data->X, data->y, data->n_samples, train_ratio, &X_train, &X_test, &y_train, &y_test);
 
-        model->train(model, X_train, y_train, fold_size, data->n_features, fold_size, data->n_features);
+        model->train(model, X_train, y_train, fold_size, data->n_features);
 
-        double accuracy = model_evaluate(model, X_test, fold_size, data->n_features);
+        double accuracy = model_evaluate(model, X_test, y_test, fold_size, data->n_features);
         printf("Fold %d: Accuracy = %.2f\n", i + 1, accuracy);
 
         for (int j = 0; j < fold_size; j++) {

@@ -1,8 +1,4 @@
-#include "model.h"
-#include <stdio.h>
-#include <stdlib.h>
-
-void placeholder_train(Model *self, double **data, int n_samples, int n_features) {
+void placeholder_train(Model *self, double **data, double *target, int n_samples, int n_features) {
     printf("Training a placeholder model...\n");
 }
 
@@ -16,7 +12,7 @@ void placeholder_free(Model *self) {
     free(self);
 }
 
-double model_evaluate(Model *model, double **data, int n_samples, int n_features, int target_index) {
+double model_evaluate(Model *model, double **data, double *target, int n_samples, int n_features) {
     if (model == NULL || data == NULL) {
         printf("Error: model or data is NULL\n");
         return -1.0;
@@ -25,7 +21,7 @@ double model_evaluate(Model *model, double **data, int n_samples, int n_features
     int correct = 0;
     for (int i = 0; i < n_samples; i++) {
         double prediction = model->predict(model, data[i], n_features);
-        if (prediction == data[i][target_index]) {
+        if (prediction == target[i]) {
             correct++;
         }
     }
