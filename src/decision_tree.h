@@ -3,7 +3,12 @@
 
 #include <stdlib.h>
 
-typedef struct DecisionTree DecisionTree;
+typedef struct DecisionTree {
+    TreeNode *root;
+    size_t max_depth;
+    size_t min_samples_split;
+} DecisionTree;
+
 
 typedef struct Model {
     DecisionTree *current_tree;
