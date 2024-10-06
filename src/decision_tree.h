@@ -2,7 +2,6 @@
 #define DECISION_TREE_H
 
 #include <stdlib.h>
-#include "model.h"
 
 typedef struct TreeNode {
     size_t feature_idx;
@@ -12,7 +11,7 @@ typedef struct TreeNode {
     struct TreeNode *right;
 } TreeNode;
 
-typedef struct {
+typedef struct DecisionTree {
     TreeNode *root;
 } DecisionTree;
 

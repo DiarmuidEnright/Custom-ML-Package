@@ -1,9 +1,7 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <stdlib.h>
-
-typedef struct DecisionTree DecisionTree;
+#include "decision_tree.h"
 
 typedef struct Model {
     void (*train)(struct Model *self, double **data, int n_samples, int n_features);
