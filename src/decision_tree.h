@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 typedef struct Model {
+    DecisionTree *current_tree;
     void (*train)(struct Model *self, double **data, double *target, int n_samples, int n_features);
     double (*predict)(struct Model *self, double *data, int n_features);
     void (*free)(struct Model *self);
