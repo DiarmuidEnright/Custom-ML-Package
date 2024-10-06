@@ -37,7 +37,6 @@ void matrix_set(Matrix *matrix, int row, int col, double value) {
     matrix->data[row][col] = value;
 }
 
-// Function to print a matrix
 void matrix_print(Matrix *matrix) {
     int i, j;
     for (i = 0; i < matrix->rows; i++) {
