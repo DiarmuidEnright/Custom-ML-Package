@@ -35,5 +35,6 @@ void decision_tree_train(Model *self, double **X, double *y, int n_samples, int 
 void decision_tree_free(TreeNode *node);
 
 double decision_tree_predict(TreeNode *node, double *x);
+double majority_class(double *y, int n_samples);
 
 #endif
