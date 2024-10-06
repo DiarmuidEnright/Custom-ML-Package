@@ -1,6 +1,8 @@
 #ifndef MODEL_H
 #define MODEL_H
 
+#include <stdlib.h>
+
 typedef struct DecisionTree DecisionTree;
 
 typedef struct Model {
@@ -11,7 +13,6 @@ typedef struct Model {
 } Model;
 
 double model_evaluate(Model *model, double **data, int n_samples, int n_features);
-
 Model* create_decision_tree();
 Model* create_knn();
 Model* create_svm();

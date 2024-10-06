@@ -2,6 +2,7 @@
 #define DECISION_TREE_H
 
 #include <stdlib.h>
+#include "model.h"
 
 typedef struct TreeNode {
     size_t feature_idx;
