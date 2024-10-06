@@ -3,6 +3,14 @@
 
 #include <stdlib.h>
 
+typedef struct TreeNode {
+    size_t feature_idx;
+    double threshold;
+    double value;
+    struct TreeNode *left;
+    struct TreeNode *right;
+} TreeNode;
+
 typedef struct DecisionTree {
     TreeNode *root;
     size_t max_depth;
@@ -16,14 +24,6 @@ typedef struct Model {
     double (*predict)(struct Model *self, double *data, int n_features);
     void (*free)(struct Model *self);
 } Model;
-
-typedef struct TreeNode {
-    size_t feature_idx;
-    double threshold;
-    double value;
-    struct TreeNode *left;
-    struct TreeNode *right;
-} TreeNode;
 
 Model* create_decision_tree(void);
 
