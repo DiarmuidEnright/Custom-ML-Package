@@ -12,7 +12,7 @@ void placeholder_free(Model *self) {
     free(self);
 }
 
-double model_evaluate(Model *model, double **data, double *target, int n_samples, int n_features) {
+double model_evaluate(Model *model, double **data, int n_samples, int n_features) {
     if (model == NULL || data == NULL) {
         printf("Error: model or data is NULL\n");
         return -1.0;
@@ -21,7 +21,7 @@ double model_evaluate(Model *model, double **data, double *target, int n_samples
     int correct = 0;
     for (int i = 0; i < n_samples; i++) {
         double prediction = model->predict(model, data[i], n_features);
-        if (prediction == target[i]) {
+        if (prediction == data[i][n_features - 1]) {
             correct++;
         }
     }
