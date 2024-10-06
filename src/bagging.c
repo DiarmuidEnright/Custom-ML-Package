@@ -26,12 +26,12 @@ void train_bagging(Model *self, double **data, double *target, int n_samples, in
     }
 }
 
-double predict_bagging(Model *self, double *data, int n_features, size_t sample_size) {
+double predict_bagging(Model *self, double *data, int n_features) {
     BaggingModel *bagging_model = (BaggingModel *)self;
     double *predictions = (double *)malloc(bagging_model->num_models * sizeof(double));
 
     for (int i = 0; i < bagging_model->num_models; i++) {
-        predictions[i] = bagging_model->models[i]->predict(bagging_model->models[i], data, n_features, sample_size);
+        predictions[i] = bagging_model->models[i]->predict(bagging_model->models[i], data, n_features);
     }
 
     double final_prediction = 0.0;
@@ -64,7 +64,8 @@ Model* bagging(Model **models, Dataset *data, int num_models) {
 
     Model *model = (Model *)malloc(sizeof(Model));
     model->train = (void (*)(Model *, double **, double *, int, int, size_t, size_t))train_bagging;
-    model->predict = (double (*)(Model *, double *, int, size_t))predict_bagging;
+    model->predict = (double (*)(Model *, double *, int))predict_bagging;
     model->free = (void (*)(Model *))free_bagging;
 
     return model;
+}
