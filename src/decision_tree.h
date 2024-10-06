@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+typedef struct Model Model;
+
 typedef struct TreeNode {
     size_t feature_idx;
     double threshold;
