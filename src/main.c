@@ -13,7 +13,7 @@
 #include "preprocess.h"
 #include "utils.h"
 #include "ensemble_methods.h"
-#include "cross_validation.c"
+#include "cross_validation.h"
 
 typedef struct {
     int input_size;
@@ -98,6 +98,34 @@ int main() {
         printf("\n");
     }
 
+    Model *decision_tree_model = create_decision_tree();
+    Model *knn_model = create_knn();
+    Model *svm_model = create_svm();
+
+    int k = 5;
+    printf("Performing 5-fold cross-validation on Decision Tree:\n");
+    cross_validation(decision_tree_model, data, k);
+    
+    printf("Performing 5-fold cross-validation on KNN:\n");
+    cross_validation(knn_model, data, k);
+
+    printf("Performing 5-fold cross-validation on SVM:\n");
+    cross_validation(svm_model, data, k);
+
+    Model *models[] = {decision_tree_model, knn_model, svm_model};
+    int num_models = 3;
+
+    printf("Applying Bagging Ensemble Method:\n");
+    Model *bagging_model = bagging(models, data, num_models);
+    double bagging_accuracy = model_evaluate(bagging_model, data);
+    printf("Bagging Accuracy: %.2f\n", bagging_accuracy);
+
+    printf("Applying Stacking Ensemble Method:\n");
+    Model *stacking_model = stacking(models, data, num_models);
+    double stacking_accuracy = model_evaluate(stacking_model, data);
+    printf("Stacking Accuracy: %.2f\n", stacking_accuracy);
+
+    // Free resources
     for (int i = 0; i < n_samples; i++) {
         free(data[i]);
     }
@@ -111,6 +139,12 @@ int main() {
     free(nn->weights_input_hidden);
     free(nn->weights_hidden_output);
     free(nn);
+
+    free_model(decision_tree_model);
+    free_model(knn_model);
+    free_model(svm_model);
+    free_model(bagging_model);
+    free_model(stacking_model);
 
     return 0;
 }
