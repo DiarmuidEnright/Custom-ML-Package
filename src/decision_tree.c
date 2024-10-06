@@ -141,13 +141,6 @@ double decision_tree_predict(TreeNode *node, double *x) {
     }
 }
 
-static void free_tree(TreeNode *node);
-
-void decision_tree_free(DecisionTree *tree) {
-    free_tree(tree->root);
-    free(tree);
-}
-
 static void free_tree(TreeNode *node) {
     if (node == NULL) return;
 
@@ -156,49 +149,34 @@ static void free_tree(TreeNode *node) {
     free(node);
 }
 
-void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split) {
-    self->tree = (DecisionTree *)malloc(sizeof(DecisionTree));
-    self->tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
+void decision_tree_free(DecisionTree *tree) {
+    if (tree == NULL) return;
+    free_tree(tree->root);
+    free(tree);
 }
 
-int main() {
-    int n_samples = 6;
-    int n_features = 2;
-
-    double **X = (double **)malloc(n_samples * sizeof(double *));
-    for (int i = 0; i < n_samples; i++) {
-        X[i] = (double *)malloc(n_features * sizeof(double));
+void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split) {
+    if (self->current_tree != NULL) {
+        decision_tree_free(self->current_tree);
     }
+    self->current_tree = (DecisionTree *)malloc(sizeof(DecisionTree));
+    self->current_tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
+}
 
-    X[0][0] = 2.0; X[0][1] = 3.0;
-    X[1][0] = 1.0; X[1][1] = 1.0;
-    X[2][0] = 4.0; X[2][1] = 5.0;
-    X[3][0] = 3.0; X[3][1] = 2.0;
-    X[4][0] = 5.0; X[4][1] = 4.0;
-    X[5][0] = 6.0; X[5][1] = 5.0;
+static double decision_tree_model_predict(struct Model *self, double *data, int n_features) {
+    return decision_tree_predict(self->current_tree->root, data);
+}
 
-    double *residuals = (double *)malloc(n_samples * sizeof(double));
-    residuals[0] = 0;
-    residuals[1] = 0;
-    residuals[2] = 1;
-    residuals[3] = 0;
-    residuals[4] = 1;
-    residuals[5] = 1;
+static void decision_tree_model_free(struct Model *self) {
+    decision_tree_free(self->current_tree);
+    free(self);
+}
 
-    Model *model = create_decision_tree();
-
-    size_t max_depth = 10;
-    size_t min_samples_split = 2;
-
-    decision_tree_train(model, X, residuals, n_samples, n_features, max_depth, min_samples_split);
-
-    decision_tree_free(model->tree);
-    free(model);
-    for (int i = 0; i < n_samples; i++) {
-        free(X[i]);
-    }
-    free(X);
-    free(residuals);
-
-    return 0;
+Model* create_decision_tree() {
+    Model* model = (Model*)malloc(sizeof(Model));
+    model->train = decision_tree_train;
+    model->predict = decision_tree_model_predict;
+    model->free = decision_tree_model_free;
+    model->current_tree = NULL;
+    return model;
 }

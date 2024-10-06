@@ -21,8 +21,9 @@ GradientBoosting* gradient_boosting_train(Model *model, double **X, double *y, s
     for (size_t i = 0; i < n_trees; i++) {
         compute_residuals(y, predictions, residuals, n_samples);
 
-        gb_model->trees[i] = decision_tree_train(model, X, residuals, n_samples, n_features, max_depth, min_samples_split);
-
+        decision_tree_train(model, X, residuals, n_samples, n_features, max_depth, min_samples_split);
+        gb_model->trees[i] = model->current_tree;
+        model->current_tree = NULL;
         for (size_t j = 0; j < n_samples; j++) {
             double tree_prediction = decision_tree_predict(gb_model->trees[i]->root, X[j]);
             predictions[j] += learning_rate * tree_prediction;
