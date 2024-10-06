@@ -16,6 +16,10 @@
 #include "cross_validation.h"
 #include "model.h"
 
+const char *model_names[] = {"Decision Tree", "KNN", "SVM"};
+
+const int k = 5;
+
 typedef struct {
     int input_size;
     int hidden_size;
@@ -37,13 +41,25 @@ void initialize_weights(double *weights, int size) {
 
 NeuralNetwork* initialize_network(int input_size, int hidden_size, int output_size, double learning_rate) {
     NeuralNetwork *network = (NeuralNetwork*)malloc(sizeof(NeuralNetwork));
+    if (network == NULL) {
+        printf("Error: unable to allocate memory for neural network\n");
+        exit(1);
+    }
     network->input_size = input_size;
     network->hidden_size = hidden_size;
     network->output_size = output_size;
     network->learning_rate = learning_rate;
 
     network->weights_input_hidden = (double*)malloc(input_size * hidden_size * sizeof(double));
+    if (network->weights_input_hidden == NULL) {
+        printf("Error: unable to allocate memory for weights_input_hidden\n");
+        exit(1);
+    }
     network->weights_hidden_output = (double*)malloc(hidden_size * output_size * sizeof(double));
+    if (network->weights_hidden_output == NULL) {
+        printf("Error: unable to allocate memory for weights_hidden_output\n");
+        exit(1);
+    }
 
     initialize_weights(network->weights_input_hidden, input_size * hidden_size);
     initialize_weights(network->weights_hidden_output, hidden_size * output_size);
@@ -59,7 +75,7 @@ void forward(NeuralNetwork *network, double *input, double *hidden, double *outp
         }
         hidden[i] = sigmoid(hidden[i]);
     }
-    
+
     for (int i = 0; i < network->output_size; i++) {
         output[i] = 0;
         for (int j = 0; j < network->hidden_size; j++) {
@@ -82,8 +98,16 @@ int main() {
     printf("PCA Example:\n");
     int n_samples = 5, n_features = 3;
     double **data = (double**)malloc(n_samples * sizeof(double*));
+    if (data == NULL) {
+        printf("Error: unable to allocate memory for data\n");
+        exit(1);
+    }
     for (int i = 0; i < n_samples; i++) {
         data[i] = (double*)malloc(n_features * sizeof(double));
+        if (data[i] == NULL) {
+            printf("Error: unable to allocate memory for data[%d]\n", i);
+            exit(1);
+        }
         for (int j = 0; j < n_features; j++) {
             data[i][j] = (double)rand() / RAND_MAX;
         }
@@ -109,18 +133,13 @@ int main() {
     Model *knn_model = create_knn();
     Model *svm_model = create_svm();
 
-    int k = 5;
-    printf("Performing 5-fold cross-validation on Decision Tree:\n");
-    cross_validation(decision_tree_model, &dataset, k);
-    
-    printf("Performing 5-fold cross-validation on KNN:\n");
-    cross_validation(knn_model, &dataset, k);
-
-    printf("Performing 5-fold cross-validation on SVM:\n");
-    cross_validation(svm_model, &dataset, k);
-
     Model *models[] = {decision_tree_model, knn_model, svm_model};
     int num_models = 3;
+
+    for (int i = 0; i < num_models; i++) {
+        printf("Performing %d-fold cross-validation on %s:\n", k, model_names[i]);
+        cross_validation(models[i], &dataset, k);
+    }
 
     printf("Applying Bagging Ensemble Method:\n");
     Model *bagging_model = bagging(models, &dataset, num_models);
@@ -136,12 +155,13 @@ int main() {
         free(data[i]);
     }
     free(data);
-    
+
     for (int i = 0; i < n_components; i++) {
         free(pca->components[i]);
     }
     free(pca->components);
     free(pca);
+
     free(nn->weights_input_hidden);
     free(nn->weights_hidden_output);
     free(nn);

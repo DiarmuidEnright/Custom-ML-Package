@@ -16,11 +16,16 @@ void placeholder_free(Model *self) {
     free(self);
 }
 
-double model_evaluate(Model *model, double **data, int n_samples, int n_features) {
+double model_evaluate(Model *model, double **data, int n_samples, int n_features, int target_index) {
+    if (model == NULL || data == NULL) {
+        printf("Error: model or data is NULL\n");
+        return -1.0;
+    }
+
     int correct = 0;
     for (int i = 0; i < n_samples; i++) {
         double prediction = model->predict(model, data[i], n_features);
-        if (prediction == data[i][n_features - 1]) {
+        if (prediction == data[i][target_index]) {
             correct++;
         }
     }
@@ -29,6 +34,10 @@ double model_evaluate(Model *model, double **data, int n_samples, int n_features
 
 Model* create_placeholder_model() {
     Model *model = (Model*)malloc(sizeof(Model));
+    if (model == NULL) {
+        printf("Error: memory allocation failed\n");
+        return NULL;
+    }
     model->train = placeholder_train;
     model->predict = placeholder_predict;
     model->free = placeholder_free;

@@ -1,15 +1,15 @@
 #ifndef RANDOM_FOREST_H
 #define RANDOM_FOREST_H
 
-#include "decision_tree.h"
+#include "model.h"
 
-typedef struct {
+typedef struct Forest {
     DecisionTree **trees;
-    size_t n_trees;
-} RandomForest;
+    int n_trees;
+} Forest;
 
-RandomForest* random_forest_train(double **X, double *y, size_t n_samples, size_t n_features, size_t n_trees, size_t max_depth, size_t min_samples_split);
-double random_forest_predict(RandomForest *forest, double *x);
-void random_forest_free(RandomForest *forest);
+Forest* create_forest(int n_trees, int max_depth, int n_features, int n_samples, double **X, double *y);
+void free_forest(Forest *forest);
+double random_forest_predict(Forest *forest, double *x);
 
-#endif
+#endif  // RANDOM_FOREST_H
