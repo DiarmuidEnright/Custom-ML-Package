@@ -9,6 +9,8 @@ Model* create_model();
 Model* create_knn();
 Model* create_svm();
 Model* create_placeholder_model();
+Model* stacking();
+extern int n_classes;
 
 void free_model(Model *model);
 
