@@ -7,6 +7,34 @@
 
 extern int n_classes;
 
+double majority_class(double *y, int n_samples) {
+    double *counts = calloc(n_classes, sizeof(double));
+    int i;
+    for (i = 0; i < n_samples; i++) {
+        counts[(size_t)y[i]]++;
+    }
+
+    double majority_class = 0.0;
+    double max_count = 0.0;
+    for (i = 0; i < n_classes; i++) {
+        if (counts[i] > max_count) {
+            max_count = counts[i];
+            majority_class = i;
+        }
+    }
+
+    free(counts);
+    return majority_class;
+}
+
+TreeNode *create_leaf_node(double value) {
+    TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
+    node->value = value;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
+}
+
 double entropy(double *y, int n_samples) {
     double *counts = calloc(n_classes, sizeof(double));
     int i;
