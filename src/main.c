@@ -14,6 +14,7 @@
 #include "utils.h"
 #include "ensemble_methods.h"
 #include "cross_validation.h"
+#include "model.h"
 
 typedef struct {
     int input_size;
@@ -84,7 +85,7 @@ int main() {
     for (int i = 0; i < n_samples; i++) {
         data[i] = (double*)malloc(n_features * sizeof(double));
         for (int j = 0; j < n_features; j++) {
-            data[i][j] = (double)rand() / RAND_MAX;  // Random data
+            data[i][j] = (double)rand() / RAND_MAX;
         }
     }
 
@@ -98,31 +99,37 @@ int main() {
         printf("\n");
     }
 
+    Dataset dataset;
+    dataset.X = data;
+    dataset.n_samples = n_samples;
+    dataset.n_features = n_features;
+    dataset.y = NULL;
+
     Model *decision_tree_model = create_decision_tree();
     Model *knn_model = create_knn();
     Model *svm_model = create_svm();
 
     int k = 5;
     printf("Performing 5-fold cross-validation on Decision Tree:\n");
-    cross_validation(decision_tree_model, data, k);
+    cross_validation(decision_tree_model, &dataset, k);
     
     printf("Performing 5-fold cross-validation on KNN:\n");
-    cross_validation(knn_model, data, k);
+    cross_validation(knn_model, &dataset, k);
 
     printf("Performing 5-fold cross-validation on SVM:\n");
-    cross_validation(svm_model, data, k);
+    cross_validation(svm_model, &dataset, k);
 
     Model *models[] = {decision_tree_model, knn_model, svm_model};
     int num_models = 3;
 
     printf("Applying Bagging Ensemble Method:\n");
-    Model *bagging_model = bagging(models, data, num_models);
-    double bagging_accuracy = model_evaluate(bagging_model, data);
+    Model *bagging_model = bagging(models, &dataset, num_models);
+    double bagging_accuracy = model_evaluate(bagging_model, dataset.X, dataset.n_samples, dataset.n_features);
     printf("Bagging Accuracy: %.2f\n", bagging_accuracy);
 
     printf("Applying Stacking Ensemble Method:\n");
-    Model *stacking_model = stacking(models, data, num_models);
-    double stacking_accuracy = model_evaluate(stacking_model, data);
+    Model *stacking_model = stacking(models, &dataset, num_models);
+    double stacking_accuracy = model_evaluate(stacking_model, dataset.X, dataset.n_samples, dataset.n_features);
     printf("Stacking Accuracy: %.2f\n", stacking_accuracy);
 
     for (int i = 0; i < n_samples; i++) {
