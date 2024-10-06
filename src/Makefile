@@ -3,7 +3,8 @@ CFLAGS = -Wall -Iinclude
 
 SRC = main.c pca.c grid_search.c dataset.c decision_tree.c \
       gradient_boosting.c knn.c logical_regression.c \
-      random_forest.c svm.c preprocess.c utils.c
+      random_forest.c svm.c preprocess.c utils.c \
+      bagging.c cross_validation.c model.c
 
 OBJ = $(SRC:.c=.o)
 TARGET = program
