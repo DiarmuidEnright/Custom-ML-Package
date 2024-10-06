@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+typedef struct DecisionTree DecisionTree;
+
 typedef struct Model {
     DecisionTree *current_tree;
     void (*train)(struct Model *self, double **data, double *target, int n_samples, int n_features);
