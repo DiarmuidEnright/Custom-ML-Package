@@ -9,11 +9,11 @@ static void compute_residuals(double *y, double *predictions, double *residuals,
     }
 }
 
-GradientBoosting* gradient_boosting_train(double **X, double *y, size_t n_samples, size_t n_features, size_t n_trees, size_t max_depth, double learning_rate) {
-    GradientBoosting *model = (GradientBoosting *)malloc(sizeof(GradientBoosting));
-    model->n_trees = n_trees;
-    model->learning_rate = learning_rate;
-    model->trees = (DecisionTree **)malloc(n_trees * sizeof(DecisionTree *));
+GradientBoosting* gradient_boosting_train(Model *model, double **X, double *y, size_t n_samples, size_t n_features, size_t n_trees, size_t max_depth, double learning_rate, size_t min_samples_split) {
+    GradientBoosting *gb_model = (GradientBoosting *)malloc(sizeof(GradientBoosting));
+    gb_model->n_trees = n_trees;
+    gb_model->learning_rate = learning_rate;
+    gb_model->trees = (DecisionTree **)malloc(n_trees * sizeof(DecisionTree *));
 
     double *predictions = (double *)calloc(n_samples, sizeof(double));
     double *residuals = (double *)malloc(n_samples * sizeof(double));
@@ -21,10 +21,10 @@ GradientBoosting* gradient_boosting_train(double **X, double *y, size_t n_sample
     for (size_t i = 0; i < n_trees; i++) {
         compute_residuals(y, predictions, residuals, n_samples);
 
-        model->trees[i] = decision_tree_train(X, residuals, n_samples, n_features, max_depth, 2);
+        gb_model->trees[i] = decision_tree_train(model, X, residuals, n_samples, n_features, max_depth, min_samples_split);
 
         for (size_t j = 0; j < n_samples; j++) {
-            double tree_prediction = decision_tree_predict(model->trees[i]->root, X[j]);
+            double tree_prediction = decision_tree_predict(gb_model->trees[i]->root, X[j]);
             predictions[j] += learning_rate * tree_prediction;
         }
     }
@@ -32,7 +32,7 @@ GradientBoosting* gradient_boosting_train(double **X, double *y, size_t n_sample
     free(predictions);
     free(residuals);
 
-    return model;
+    return gb_model;
 }
 
 double gradient_boosting_predict(GradientBoosting *model, double *x) {
