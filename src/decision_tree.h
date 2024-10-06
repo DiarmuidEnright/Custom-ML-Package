@@ -6,8 +6,7 @@
 typedef struct DecisionTree DecisionTree;
 
 typedef struct Model {
-    DecisionTree *current_tree;
-    void (*train)(struct Model *self, double **data, double *target, int n_samples, int n_features);
+    void (*train)(struct Model *self, double **data, double *target, int n_samples, int n_features, size_t sample_size, size_t num_features);
     double (*predict)(struct Model *self, double *data, int n_features);
     void (*free)(struct Model *self);
 } Model;
