@@ -25,47 +25,9 @@ double entropy(double *y, int n_samples) {
     return entropy_val;
 }
 
-double gini_index(double *y, int n_samples) {
-    double *counts = calloc(n_classes, sizeof(double));
-    int i;
-    for (i = 0; i < n_samples; i++) {
-        counts[(size_t)y[i]]++;
-    }
-    double gini_val = 1.0;
-    double sum = (double)n_samples;
-    for (i = 0; i < n_classes; i++) {
-        if (counts[i] > 0.0) {
-            double p = counts[i] / sum;
-            gini_val -= p * p;
-        }
-    }
-    free(counts);
-    return gini_val;
-}
-
-double majority_error(double *y, int n_samples) {
-    double *counts = calloc(n_classes, sizeof(double));
-    int i;
-    for (i = 0; i < n_samples; i++) {
-        counts[(size_t)y[i]]++;
-    }
-
-    double max_count = 0;
-    for (i = 0; i < n_classes; i++) {
-        if (counts[i] > max_count) {
-            max_count = counts[i];
-        }
-    }
-
-    double error = 1.0 - (max_count / n_samples);
-    free(counts);
-    return error;
-}
-
 double decision_tree_predict(TreeNode *node, double *x) {
     if (node->value == -1) {
-        // Decide which branch to traverse
-        return x[node->feature_index] <= node->threshold
+        return x[node->feature_idx] <= node->threshold
             ? decision_tree_predict(node->left, x)
             : decision_tree_predict(node->right, x);
     } else {
@@ -95,6 +57,7 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
         return create_leaf_node(majority_class(y, n_samples));
     }
 
+    // Find the best feature and threshold to split on
     int best_feature = -1;
     double best_threshold = 0.0;
     double best_gain = -INFINITY;
@@ -102,7 +65,7 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
     for (int f = 0; f < n_features; f++) {
         for (int i = 0; i < n_samples; i++) {
             double threshold = X[i][f];
-            double gain = 0.0;
+            double gain = 0.0;  // Calculate gain
             if (gain > best_gain) {
                 best_gain = gain;
                 best_feature = f;
@@ -113,7 +76,7 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
 
     TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
     node->value = -1;
-    node->feature_index = best_feature;
+    node->feature_idx = best_feature;
     node->threshold = best_threshold;
     node->left = decision_tree_create(X, y, n_samples / 2, n_features, depth + 1, max_depth, min_samples_split);
     node->right = decision_tree_create(X, y, n_samples / 2, n_features, depth + 1, max_depth, min_samples_split);
