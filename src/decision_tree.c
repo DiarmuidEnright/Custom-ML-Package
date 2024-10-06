@@ -57,7 +57,6 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
         return create_leaf_node(majority_class(y, n_samples));
     }
 
-    // Find the best feature and threshold to split on
     int best_feature = -1;
     double best_threshold = 0.0;
     double best_gain = -INFINITY;
@@ -65,7 +64,7 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
     for (int f = 0; f < n_features; f++) {
         for (int i = 0; i < n_samples; i++) {
             double threshold = X[i][f];
-            double gain = 0.0;  // Calculate gain
+            double gain = 0.0;
             if (gain > best_gain) {
                 best_gain = gain;
                 best_feature = f;

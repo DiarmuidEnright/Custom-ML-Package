@@ -26,6 +26,8 @@ typedef struct Model {
 } Model;
 
 Model* create_decision_tree(void);
+TreeNode* decision_tree_create(double **X, double *y, int n_samples, int n_features, size_t depth, size_t max_depth, size_t min_samples_split);
+
 
 void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split);
 
