@@ -1,217 +1,144 @@
-#include "decision_tree.h"
-#include "model.h"
 #include <stdio.h>
-#include <float.h>
 #include <stdlib.h>
+#include <math.h>
+#include "matrix.h"
+#include "model.h"
+#include "decision_tree.h"
 
-
-static double gini_index(double **X, double *y, size_t n_samples, size_t *left_indices, size_t left_size, size_t *right_indices, size_t right_size) {
-    double gini = 0.0;
-    double left_label_count[2] = {0, 0};
-    double right_label_count[2] = {0, 0};
-
-
-    for (size_t i = 0; i < left_size; i++) {
-        left_label_count[(int)y[left_indices[i]]]++;
+double entropy(double *y, int n_samples) {
+    double *counts = calloc(n_samples, sizeof(double));
+    int i;
+    for (i = 0; i < n_samples; i++) {
+        counts[(size_t) y[i]]++;
     }
-
-
-    for (size_t i = 0; i < right_size; i++) {
-        right_label_count[(int)y[right_indices[i]]]++;
-    }
-
-
-    double left_prob_0 = left_label_count[0] / left_size;
-    double left_prob_1 = left_label_count[1] / left_size;
-    double left_gini = 1.0 - (left_prob_0 * left_prob_0 + left_prob_1 * left_prob_1);
-
-
-    double right_prob_0 = right_label_count[0] / right_size;
-    double right_prob_1 = right_label_count[1] / right_size;
-    double right_gini = 1.0 - (right_prob_0 * right_prob_0 + right_prob_1 * right_prob_1);
-
-
-    gini = (left_size / (double)n_samples) * left_gini + (right_size / (double)n_samples) * right_gini;
-    return gini;
-}
-
-
-static void split_dataset(double **X, double *y, size_t n_samples, size_t feature_idx, double threshold, size_t **left_indices, size_t *left_size, size_t **right_indices, size_t *right_size) {
-    *left_indices = (size_t *)malloc(n_samples * sizeof(size_t));
-    *right_indices = (size_t *)malloc(n_samples * sizeof(size_t));
-    *left_size = 0;
-    *right_size = 0;
-
-
-    for (size_t i = 0; i < n_samples; i++) {
-        if (X[i][feature_idx] < threshold) {
-            (*left_indices)[(*left_size)++] = i;
-        } else {
-            (*right_indices)[(*right_size)++] = i;
+    double entropy_val = 0.0;
+    double sum = 0.0;
+    for (i = 0; i < n_classes; i++) {
+        if (counts[i] > 0.0) {
+            sum += counts[i];
+            entropy_val -= (counts[i] / sum) * log2((counts[i] / sum));
         }
     }
+    free(counts);
+    return entropy_val;
 }
 
-
-static void find_best_split(double **X, double *y, size_t n_samples, size_t n_features, size_t *best_feature, double *best_threshold, double *best_gini) {
-    *best_gini = DBL_MAX;
-
-
-    for (size_t feature_idx = 0; feature_idx < n_features; feature_idx++) {
-        for (size_t i = 0; i < n_samples; i++) {
-            double threshold = X[i][feature_idx];
-
-
-            size_t *left_indices, *right_indices;
-            size_t left_size, right_size;
-
-
-            split_dataset(X, y, n_samples, feature_idx, threshold, &left_indices, &left_size, &right_indices, &right_size);
-
-
-            if (left_size > 0 && right_size > 0) {
-                double gini = gini_index(X, y, n_samples, left_indices, left_size, right_indices, right_size);
-
-
-                if (gini < *best_gini) {
-                    *best_gini = gini;
-                    *best_feature = feature_idx;
-                    *best_threshold = threshold;
-                }
-            }
-
-
-            free(left_indices);
-            free(right_indices);
+double gini_index(double *y, int n_samples) {
+    double *counts = calloc(n_samples, sizeof(double));
+    int i;
+    for (i = 0; i < n_samples; i++) {
+        counts[(size_t) y[i]]++;
+    }
+    double gini_val = 1.0;
+    double sum = 0.0;
+    for (i = 0; i < n_classes; i++) {
+        if (counts[i] > 0.0) {
+            sum += counts[i];
+            gini_val -= ((counts[i] / sum) * (counts[i] / sum));
         }
     }
+    free(counts);
+    return gini_val;
 }
 
-
-static TreeNode* create_leaf_node(double *y, size_t *indices, size_t n_samples) {
-    TreeNode *leaf = (TreeNode *)malloc(sizeof(TreeNode));
-    leaf->left = NULL;
-    leaf->right = NULL;
-
-
-    size_t class_counts[2] = {0, 0};
-    for (size_t i = 0; i < n_samples; i++) {
-        class_counts[(int)y[indices[i]]]++;
-    }
-
-
-    leaf->value = (class_counts[0] > class_counts[1]) ? 0 : 1;
-    return leaf;
-}
-
-
-static TreeNode* build_tree(double **X, double *y, size_t n_samples, size_t n_features, size_t depth, size_t max_depth, size_t min_samples_split) {
-    if (n_samples <= min_samples_split || depth >= max_depth) {
-        size_t *indices = (size_t *)malloc(n_samples * sizeof(size_t));
-        for (size_t i = 0; i < n_samples; i++) {
-            indices[i] = i;
+double majority_error(double *y, int n_samples) {
+    double majority_class = 0.0;
+    double count = 0.0;
+    int i;
+    for (i = 0; i < n_samples; i++) {
+        if (y[i] == 0.0) {
+            count++;
         }
-        TreeNode *leaf = create_leaf_node(y, indices, n_samples);
-        free(indices);
-        return leaf;
     }
-
-
-    size_t best_feature;
-    double best_threshold;
-    double best_gini;
-
-
-    find_best_split(X, y, n_samples, n_features, &best_feature, &best_threshold, &best_gini);
-
-
-    if (best_gini == DBL_MAX) {
-        size_t *indices = (size_t *)malloc(n_samples * sizeof(size_t));
-        for (size_t i = 0; i < n_samples; i++) {
-            indices[i] = i;
+    if (count > (n_samples / 2.0)) {
+        majority_class = 0.0;
+    } else {
+        majority_class = 1.0;
+    }
+    double error = 0.0;
+    for (i = 0; i < n_samples; i++) {
+        if (y[i] != majority_class) {
+            error++;
         }
-        TreeNode *leaf = create_leaf_node(y, indices, n_samples);
-        free(indices);
-        return leaf;
     }
-
-
-    size_t *left_indices, *right_indices;
-    size_t left_size, right_size;
-    split_dataset(X, y, n_samples, best_feature, best_threshold, &left_indices, &left_size, &right_indices, &right_size);
-
-
-    TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
-    node->feature_idx = best_feature;
-    node->threshold = best_threshold;
-    node->left = build_tree(X, y, left_size, n_features, depth + 1, max_depth, min_samples_split);
-    node->right = build_tree(X, y, right_size, n_features, depth + 1, max_depth, min_samples_split);
-
-
-    free(left_indices);
-    free(right_indices);
-
-
-    return node;
+    return error / n_samples;
 }
-
 
 double decision_tree_predict(TreeNode *node, double *x) {
-    if (node->left == NULL && node->right == NULL) {
-        return node->value;
-    }
-
-
-    if (x[node->feature_idx] < node->threshold) {
-        return decision_tree_predict(node->left, x);
+    if (node->value == -1) {
+        return node->left ? decision_tree_predict(node->left, x) : node->right->value;
     } else {
-        return decision_tree_predict(node->right, x);
+        return node->value;
     }
 }
 
-
-static void free_tree(TreeNode *node) {
-    if (node == NULL) return;
-
-
-    free_tree(node->left);
-    free_tree(node->right);
+void decision_tree_free(TreeNode *node) {
+    if (node == NULL) {
+        return;
+    }
+    decision_tree_free(node->left);
+    decision_tree_free(node->right);
     free(node);
 }
 
-
-void decision_tree_free(DecisionTree *tree) {
-    if (tree == NULL) return;
-    free_tree(tree->root);
-    free(tree);
+void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split) {
+    DecisionTree *tree = (DecisionTree *) malloc(sizeof(DecisionTree));
+    tree->max_depth = max_depth;
+    tree->min_samples_split = min_samples_split;
+    tree->root = decision_tree_create(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
+    self->tree = tree;
 }
 
-
-void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split){
-    if (self->current_tree != NULL) {
-        decision_tree_free(self->current_tree);
+TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_features, size_t depth, size_t max_depth, size_t min_samples_split) {
+    if (depth >= max_depth || n_samples < min_samples_split) {
+        return create_leaf_node(majority_class(y, n_samples));
+    } else {
+        double *feature_values = malloc(n_samples * sizeof(double));
+        int *feature_indices = malloc(n_samples * sizeof(int));
+        int i;
+        for (i = 0; i < n_samples; i++) {
+            feature_values[i] = X[i][depth];
+            feature_indices[i] = (int) X[i][depth];
+        }
+        double best_value = -1;
+        int best_index = -1;
+        for (i = 0; i < n_samples; i++) {
+            if (feature_values[i] > best_value) {
+                best_value = feature_values[i];
+                best_index = feature_indices[i];
+            }
+        }
+        TreeNode *node = (TreeNode *) malloc(sizeof(TreeNode));
+        node->value = -1;
+        node->left = decision_tree_create(X, y, n_samples, n_features, depth + 1, max_depth, min_samples_split);
+        node->right = decision_tree_create(X, y, n_samples, n_features, depth + 1, max_depth, min_samples_split);
+        node->feature_index = best_index;
+        node->threshold = best_value;
+        free(feature_values);
+        free(feature_indices);
+        return node;
     }
-    self->current_tree = (DecisionTree *)malloc(sizeof(DecisionTree));
-    self->current_tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
 }
 
-
-static double decision_tree_model_predict(struct Model *self, double *data, int n_features) {
-    return decision_tree_predict(self->current_tree->root, data);
+TreeNode *create_leaf_node(double value) {
+    TreeNode *node = (TreeNode *) malloc(sizeof(TreeNode));
+    node->value = value;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
 }
 
-
-static void decision_tree_model_free(struct Model *self) {
-    decision_tree_free(self->current_tree);
-    free(self);
-}
-
-
-Model* create_decision_tree() {
-    Model* model = (Model*)malloc(sizeof(Model));
-    model->train = decision_tree_train;
-    model->predict = decision_tree_model_predict;
-    model->free = decision_tree_model_free;
-    model->current_tree = NULL;
-    return model;
+double majority_class(double *y, int n_samples) {
+    double count = 0.0;
+    int i;
+    for (i = 0; i < n_samples; i++) {
+        if (y[i] == 0.0) {
+            count++;
+        }
+    }
+    if (count > (n_samples / 2.0)) {
+        return 0.0;
+    } else {
+        return 1.0;
+    }
 }
