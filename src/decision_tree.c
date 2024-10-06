@@ -157,6 +157,6 @@ static void free_tree(TreeNode *node) {
 }
 
 void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split) {
-    self->tree = (DecisionTree*)malloc(sizeof(DecisionTree));
+    self->tree = (DecisionTree *)malloc(sizeof(DecisionTree));
     self->tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
 }
