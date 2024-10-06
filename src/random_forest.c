@@ -1,4 +1,5 @@
 #include "random_forest.h"
+#include "decision_tree.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -17,7 +18,11 @@ RandomForest* random_forest_train(double **X, double *y, size_t n_samples, size_
             bootstrap_y[j] = y[idx];
         }
 
-        forest->trees[i] = decision_tree_train(bootstrap_X, bootstrap_y, n_samples, n_features, max_depth, min_samples_split);
+        Model *tree_model = (Model *)malloc(sizeof(Model));
+        tree_model->root = NULL;
+        decision_tree_train(tree_model, bootstrap_X, bootstrap_y, n_samples, n_features, max_depth, min_samples_split);
+
+        forest->trees[i] = tree_model;
 
         free(bootstrap_X);
         free(bootstrap_y);
