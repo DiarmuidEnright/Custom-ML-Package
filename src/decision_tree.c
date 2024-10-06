@@ -44,7 +44,7 @@ void decision_tree_free(TreeNode *node) {
     free(node);
 }
 
-void decision_tree_train(DecisionTree *tree, double **X, double *y, int n_samples, int n_features, int max_depth, int min_samples_split) {
+void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split) {
     DecisionTree *tree = (DecisionTree *)malloc(sizeof(DecisionTree));
     tree->max_depth = max_depth;
     tree->min_samples_split = min_samples_split;
