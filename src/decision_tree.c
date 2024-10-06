@@ -186,16 +186,14 @@ int main() {
     residuals[5] = 1;
 
     Model *model = create_decision_tree();
+
     size_t max_depth = 10;
     size_t min_samples_split = 2;
 
     decision_tree_train(model, X, residuals, n_samples, n_features, max_depth, min_samples_split);
 
-    double sample[2] = {3.0, 2.5};
-    double prediction = decision_tree_predict(model->tree->root, sample);
-    printf("Prediction for sample [3.0, 2.5]: %.0f\n", prediction);
-
-    decision_tree_free(model);
+    decision_tree_free(model->tree);
+    free(model);
     for (int i = 0; i < n_samples; i++) {
         free(X[i]);
     }
