@@ -129,7 +129,7 @@ static TreeNode* build_tree(double **X, double *y, size_t n_samples, size_t n_fe
     return node;
 }
 
-static double decision_tree_predict(TreeNode *node, double *x) {
+double decision_tree_predict(TreeNode *node, double *x) {
     if (node->left == NULL && node->right == NULL) {
         return node->value;
     }
@@ -175,9 +175,7 @@ void free_model(Model *model) {
 
 Model* create_decision_tree() {
     Model *model = (Model *)malloc(sizeof(Model));
-    if (model == NULL) {
-        return NULL;
-    }
+    if (!model) return NULL;
 
     model->train = decision_tree_train;
     model->predict = (double (*)(struct Model *, double *, int))decision_tree_predict;
