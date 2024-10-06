@@ -141,19 +141,7 @@ double decision_tree_predict(TreeNode *node, double *x) {
     }
 }
 
-void decision_tree_train(Model *self, double **X, int n_samples, int n_features) {
-    double *y = (double *)malloc(n_samples * sizeof(double));
-    for (int i = 0; i < n_samples; i++) {
-        y[i] = X[i][0];
-    }
-
-    size_t max_depth = 10;
-    size_t min_samples_split = 2;
-
-    self->tree = (DecisionTree*)malloc(sizeof(DecisionTree));
-    self->tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
-    free(y);
-}
+static void free_tree(TreeNode *node);
 
 void decision_tree_free(DecisionTree *tree) {
     free_tree(tree->root);
@@ -166,4 +154,18 @@ static void free_tree(TreeNode *node) {
     free_tree(node->left);
     free_tree(node->right);
     free(node);
+}
+
+void decision_tree_train(Model *self, double **X, int n_samples, int n_features) {
+    double *y = (double *)malloc(n_samples * sizeof(double));
+    for (int i = 0; i < n_samples; i++) {
+        y[i] = X[i][0];
+    }
+
+    size_t max_depth = 10;
+    size_t min_samples_split = 2;
+
+    self->tree = (DecisionTree*)malloc(sizeof(DecisionTree));
+    self->tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
+    free(y);
 }
