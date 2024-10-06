@@ -150,16 +150,14 @@ void decision_tree_train(Model *self, double **X, int n_samples, int n_features)
     size_t max_depth = 10;
     size_t min_samples_split = 2;
 
-    self->tree = decision_tree_train(X, y, n_samples, n_features, max_depth, min_samples_split);
+    self->tree = (DecisionTree*)malloc(sizeof(DecisionTree));
+    self->tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
     free(y);
 }
 
-void decision_tree_free(Model *self) {
-    if (self->tree != NULL) {
-        free_tree(self->tree->root);
-        free(self->tree);
-    }
-    free(self);
+void decision_tree_free(DecisionTree *tree) {
+    free_tree(tree->root);
+    free(tree);
 }
 
 static void free_tree(TreeNode *node) {
