@@ -27,6 +27,7 @@ typedef struct Model {
 
 Model* create_decision_tree(void);
 TreeNode* decision_tree_create(double **X, double *y, int n_samples, int n_features, size_t depth, size_t max_depth, size_t min_samples_split);
+double majority_class(double *y, int n_samples);
 TreeNode* create_majority_class(double *y, int n_samples);
 TreeNode* create_leaf_node(double value);
 
