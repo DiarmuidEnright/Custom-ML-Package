@@ -1,4 +1,5 @@
 #include "decision_tree.h"
+#include "model.h"
 #include <stdio.h>
 #include <float.h>
 #include <stdlib.h>
