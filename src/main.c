@@ -15,6 +15,8 @@
 #include "ensemble_methods.h"
 #include "cross_validation.h"
 #include "model.h"
+#include "matrix.h"
+
 
 const char *model_names[] = {"Decision Tree", "KNN", "SVM"};
 
