@@ -7,13 +7,12 @@
 
 double entropy(double *y, int n_samples) {
     double *counts = calloc(n_samples, sizeof(double));
-    int i;
-    for (i = 0; i < n_samples; i++) {
+    for (int i = 0; i < n_samples; i++) {
         counts[(size_t) y[i]]++;
     }
     double entropy_val = 0.0;
     double sum = 0.0;
-    for (i = 0; i < n_classes; i++) {
+    for (int i = 0; i < n_classes; i++) {
         if (counts[i] > 0.0) {
             sum += counts[i];
             entropy_val -= (counts[i] / sum) * log2((counts[i] / sum));
@@ -25,13 +24,12 @@ double entropy(double *y, int n_samples) {
 
 double gini_index(double *y, int n_samples) {
     double *counts = calloc(n_samples, sizeof(double));
-    int i;
-    for (i = 0; i < n_samples; i++) {
+    for (int i = 0; i < n_samples; i++) {
         counts[(size_t) y[i]]++;
     }
     double gini_val = 1.0;
     double sum = 0.0;
-    for (i = 0; i < n_classes; i++) {
+    for (int i = 0; i < n_classes; i++) {
         if (counts[i] > 0.0) {
             sum += counts[i];
             gini_val -= ((counts[i] / sum) * (counts[i] / sum));
@@ -42,28 +40,15 @@ double gini_index(double *y, int n_samples) {
 }
 
 double majority_error(double *y, int n_samples) {
-    double majority_class = 0.0;
-    double count = 0.0;
-    int i;
-    for (i = 0; i < n_samples; i++) {
-        if (y[i] == 0.0) {
-            count++;
-        }
-    }
-    if (count > (n_samples / 2.0)) {
-        majority_class = 0.0;
-    } else {
-        majority_class = 1.0;
-    }
+    double majority_class = majority_class(y, n_samples);
     double error = 0.0;
-    for (i = 0; i < n_samples; i++) {
+    for (int i = 0; i < n_samples; i++) {
         if (y[i] != majority_class) {
             error++;
         }
     }
     return error / n_samples;
 }
-
 double decision_tree_predict(TreeNode *node, double *x) {
     if (node->value == -1) {
         return node->left ? decision_tree_predict(node->left, x) : node->right->value;
@@ -93,19 +78,12 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
     if (depth >= max_depth || n_samples < min_samples_split) {
         return create_leaf_node(majority_class(y, n_samples));
     } else {
-        double *feature_values = malloc(n_samples * sizeof(double));
-        int *feature_indices = malloc(n_samples * sizeof(int));
-        int i;
-        for (i = 0; i < n_samples; i++) {
-            feature_values[i] = X[i][depth];
-            feature_indices[i] = (int) X[i][depth];
-        }
-        double best_value = -1;
         int best_index = -1;
-        for (i = 0; i < n_samples; i++) {
-            if (feature_values[i] > best_value) {
-                best_value = feature_values[i];
-                best_index = feature_indices[i];
+        double best_value = -1;
+        for (int i = 0; i < n_samples; i++) {
+            if (X[i][depth] > best_value) {
+                best_value = X[i][depth];
+                best_index = (int) X[i][depth];
             }
         }
         TreeNode *node = (TreeNode *) malloc(sizeof(TreeNode));
@@ -114,8 +92,6 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
         node->right = decision_tree_create(X, y, n_samples, n_features, depth + 1, max_depth, min_samples_split);
         node->feature_index = best_index;
         node->threshold = best_value;
-        free(feature_values);
-        free(feature_indices);
         return node;
     }
 }
@@ -130,15 +106,10 @@ TreeNode *create_leaf_node(double value) {
 
 double majority_class(double *y, int n_samples) {
     double count = 0.0;
-    int i;
-    for (i = 0; i < n_samples; i++) {
+    for (int i = 0; i < n_samples; i++) {
         if (y[i] == 0.0) {
             count++;
         }
     }
-    if (count > (n_samples / 2.0)) {
-        return 0.0;
-    } else {
-        return 1.0;
-    }
+    return (count > (n_samples / 2.0)) ? 0.0 : 1.0;
 }
