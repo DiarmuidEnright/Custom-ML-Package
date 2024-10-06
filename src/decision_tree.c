@@ -160,3 +160,47 @@ void decision_tree_train(Model *self, double **X, double *y, int n_samples, int 
     self->tree = (DecisionTree *)malloc(sizeof(DecisionTree));
     self->tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
 }
+
+int main() {
+    int n_samples = 6;
+    int n_features = 2;
+
+    double **X = (double **)malloc(n_samples * sizeof(double *));
+    for (int i = 0; i < n_samples; i++) {
+        X[i] = (double *)malloc(n_features * sizeof(double));
+    }
+
+    X[0][0] = 2.0; X[0][1] = 3.0;
+    X[1][0] = 1.0; X[1][1] = 1.0;
+    X[2][0] = 4.0; X[2][1] = 5.0;
+    X[3][0] = 3.0; X[3][1] = 2.0;
+    X[4][0] = 5.0; X[4][1] = 4.0;
+    X[5][0] = 6.0; X[5][1] = 5.0;
+
+    double *residuals = (double *)malloc(n_samples * sizeof(double));
+    residuals[0] = 0;
+    residuals[1] = 0;
+    residuals[2] = 1;
+    residuals[3] = 0;
+    residuals[4] = 1;
+    residuals[5] = 1;
+
+    Model *model = create_decision_tree();
+    size_t max_depth = 10;
+    size_t min_samples_split = 2;
+
+    decision_tree_train(model, X, residuals, n_samples, n_features, max_depth, min_samples_split);
+
+    double sample[2] = {3.0, 2.5};
+    double prediction = decision_tree_predict(model->tree->root, sample);
+    printf("Prediction for sample [3.0, 2.5]: %.0f\n", prediction);
+
+    decision_tree_free(model);
+    for (int i = 0; i < n_samples; i++) {
+        free(X[i]);
+    }
+    free(X);
+    free(residuals);
+
+    return 0;
+}
