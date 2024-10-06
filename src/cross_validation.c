@@ -47,7 +47,7 @@ void cross_validation(Model *model, Dataset *data, int k) {
 
         double learning_rate = 0.01;
         int num_iterations = 100; //hard coded values
-        model->train(model->train(model, X_train, y_train, fold_size, data->n_features, learning_rate, num_iterations);
+        model->train(model, X_train, y_train, fold_size, data->n_features, learning_rate, num_iterations);
 
         double accuracy = model_evaluate(model, X_test, fold_size, data->n_features);
         printf("Fold %d: Accuracy = %.2f\n", i + 1, accuracy);
