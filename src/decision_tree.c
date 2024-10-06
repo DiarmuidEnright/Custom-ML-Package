@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <float.h>
 #include <stdlib.h>
+#include "model.h"
 
 static double gini_index(double **X, double *y, size_t n_samples, size_t *left_indices, size_t left_size, size_t *right_indices, size_t right_size) {
     double gini = 0.0;
@@ -128,7 +129,7 @@ static TreeNode* build_tree(double **X, double *y, size_t n_samples, size_t n_fe
     return node;
 }
 
-double decision_tree_predict(TreeNode *node, double *x) {
+static double decision_tree_predict(TreeNode *node, double *x) {
     if (node->left == NULL && node->right == NULL) {
         return node->value;
     }
@@ -140,13 +141,16 @@ double decision_tree_predict(TreeNode *node, double *x) {
     }
 }
 
-DecisionTree* decision_tree_train(double **X, double *y, size_t n_samples, size_t n_features, size_t max_depth, size_t min_samples_split) {
+static void decision_tree_train(Model *self, double **X, int n_samples, int n_features) {
     DecisionTree *tree = (DecisionTree *)malloc(sizeof(DecisionTree));
     if (tree == NULL) {
-        return NULL;
+        return;
     }
-    tree->root = build_tree(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
-    return tree;
+    tree->root = build_tree(X, NULL, n_samples, n_features, 0, 10, 2);
+
+    self->train = decision_tree_train;
+    self->predict = (double (*)(struct Model *, double *, int))decision_tree_predict;
+    self->free = free_model;
 }
 
 static void free_tree(TreeNode *node) {
@@ -160,4 +164,24 @@ static void free_tree(TreeNode *node) {
 void decision_tree_free(DecisionTree *tree) {
     free_tree(tree->root);
     free(tree);
+}
+
+void free_model(Model *model) {
+    if (model) {
+        model->free(model);
+        free(model);
+    }
+}
+
+Model* create_decision_tree() {
+    Model *model = (Model *)malloc(sizeof(Model));
+    if (model == NULL) {
+        return NULL;
+    }
+
+    model->train = decision_tree_train;
+    model->predict = (double (*)(struct Model *, double *, int))decision_tree_predict;
+    model->free = free_model;
+
+    return model;
 }
