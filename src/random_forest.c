@@ -3,6 +3,7 @@
 #include "decision_tree.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 void random_forest_free(Forest *forest);
 
@@ -20,7 +21,6 @@ Forest* random_forest_train(double **X, double *y, size_t n_samples, size_t n_fe
         return NULL;
     }
 
-
     for (size_t i = 0; i < n_trees; i++) {
         double **bootstrap_X = (double **)malloc(n_samples * sizeof(double *));
         if (bootstrap_X == NULL) {
@@ -28,6 +28,7 @@ Forest* random_forest_train(double **X, double *y, size_t n_samples, size_t n_fe
             random_forest_free(forest);
             return NULL;
         }
+
         double *bootstrap_y = (double *)malloc(n_samples * sizeof(double));
         if (bootstrap_y == NULL) {
             printf("Memory allocation failed\n");
@@ -36,99 +37,26 @@ Forest* random_forest_train(double **X, double *y, size_t n_samples, size_t n_fe
             return NULL;
         }
 
-
-        for (size_t j = 0; j < n_samples; j++) {
-            size_t idx = rand() % n_samples;
-            bootstrap_X[j] = (double *)malloc(n_features * sizeof(double));
-            if (bootstrap_X[j] == NULL) {
-                printf("Memory allocation failed\n");
-                for (size_t k = 0; k < j; k++) {
-                    free(bootstrap_X[k]);
-                }
-                free(bootstrap_X);
-                free(bootstrap_y);
-                random_forest_free(forest);
-                return NULL;
-            }
-            for (size_t k = 0; k < n_features; k++) {
-                bootstrap_X[j][k] = X[idx][k];
-            }
-            bootstrap_y[j] = y[idx];
-        }
-
-
-        Model *tree_model = (Model *)malloc(sizeof(Model));
-        if (tree_model == NULL) {
+        DecisionTree *tree = (DecisionTree *)malloc(sizeof(DecisionTree));
+        if (tree == NULL) {
             printf("Memory allocation failed\n");
-            for (size_t j = 0; j < n_samples; j++) {
-                free(bootstrap_X[j]);
-            }
             free(bootstrap_X);
             free(bootstrap_y);
             random_forest_free(forest);
             return NULL;
         }
-        // Cast tree_model to a DecisionTree*
-        DecisionTree* tree = (DecisionTree*) tree_model;
-        tree->root = NULL;
-        if (tree->root == NULL) {
-            printf("Error initializing tree model\n");
-            for (size_t j = 0; j < n_samples; j++) {
-                free(bootstrap_X[j]);
-            }
-            free(bootstrap_X);
-            free(bootstrap_y);
-            free(tree_model);
-            random_forest_free(forest);
-            return NULL;
-        }
-        decision_tree_train(tree, bootstrap_X, bootstrap_y, n_samples, n_features, max_depth, min_samples_split);
-
-
+        decision_tree_train((Model *)tree, bootstrap_X, bootstrap_y, n_samples, n_features, max_depth, min_samples_split);
         forest->trees[i] = tree;
-
-
-        for (size_t j = 0; j < n_samples; j++) {
-            free(bootstrap_X[j]);
-        }
-        free(bootstrap_X);
-        free(bootstrap_y);
     }
-
-
     return forest;
 }
 
-
-double random_forest_predict(Forest *forest, double *x) {
-    if (forest == NULL || x == NULL) {
-        printf("Error: forest or x is NULL\n");
-        return -1;
-    }
-
-
-    size_t votes[2] = {0, 0};
-
-
-    for (size_t i = 0; i < forest->n_trees; i++) {
-        double prediction = decision_tree_predict(forest->trees[i]->root, x);
-        votes[(int)prediction]++;
-    }
-
-
-    return (votes[0] > votes[1]) ? 0 : 1;
-}
-
-
 void random_forest_free(Forest *forest) {
-    if (forest == NULL) {
-        return;
-    }
-
+    if (forest == NULL) return;
 
     for (size_t i = 0; i < forest->n_trees; i++) {
         if (forest->trees[i] != NULL) {
-            decision_tree_free(forest->trees[i]);
+            decision_tree_free((TreeNode *)forest->trees[i]); // Casting to TreeNode* here
         }
     }
     free(forest->trees);
