@@ -9,18 +9,24 @@ extern int n_classes;
 
 double entropy(double *y, int n_samples) {
     double *counts = calloc(n_classes, sizeof(double));
-    int i;
-    for (i = 0; i < n_samples; i++) {
+    if (!counts) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return -1;
+    }
+
+    for (int i = 0; i < n_samples; i++) {
         counts[(size_t)y[i]]++;
     }
+
     double entropy_val = 0.0;
     double sum = (double)n_samples;
-    for (i = 0; i < n_classes; i++) {
+    for (int i = 0; i < n_classes; i++) {
         if (counts[i] > 0.0) {
             double p = counts[i] / sum;
             entropy_val -= p * log2(p);
         }
     }
+
     free(counts);
     return entropy_val;
 }
@@ -36,9 +42,8 @@ double decision_tree_predict(TreeNode *node, double *x) {
 }
 
 void decision_tree_free(TreeNode *node) {
-    if (node == NULL) {
-        return;
-    }
+    if (node == NULL) return;
+
     decision_tree_free(node->left);
     decision_tree_free(node->right);
     free(node);
@@ -46,6 +51,11 @@ void decision_tree_free(TreeNode *node) {
 
 void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split) {
     DecisionTree *tree = (DecisionTree *)malloc(sizeof(DecisionTree));
+    if (!tree) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return;
+    }
+
     tree->max_depth = max_depth;
     tree->min_samples_split = min_samples_split;
     tree->root = decision_tree_create(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
@@ -54,14 +64,18 @@ void decision_tree_train(Model *self, double **X, double *y, int n_samples, int 
 
 double majority_class(double *y, int n_samples) {
     double *counts = calloc(n_classes, sizeof(double));
-    int i;
-    for (i = 0; i < n_samples; i++) {
+    if (!counts) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return -1;
+    }
+
+    for (int i = 0; i < n_samples; i++) {
         counts[(size_t)y[i]]++;
     }
 
     double majority_class = 0.0;
     double max_count = 0.0;
-    for (i = 0; i < n_classes; i++) {
+    for (int i = 0; i < n_classes; i++) {
         if (counts[i] > max_count) {
             max_count = counts[i];
             majority_class = i;
@@ -93,7 +107,16 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
         }
     }
 
+    if (best_feature == -1) {
+        return create_leaf_node(majority_class(y, n_samples));
+    }
+
     TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
+    if (!node) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return NULL;
+    }
+
     node->value = -1;
     node->feature_idx = best_feature;
     node->threshold = best_threshold;
@@ -105,6 +128,11 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
 
 TreeNode *create_leaf_node(double value) {
     TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
+    if (!node) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return NULL;
+    }
+
     node->value = value;
     node->left = NULL;
     node->right = NULL;
