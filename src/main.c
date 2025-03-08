@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+
+// Global variable needed by decision tree and other classifiers
+int n_classes = 2;
+
 #include "pca.h"
 #include "grid_search.h"
 #include "dataset.h"
@@ -12,14 +16,13 @@
 #include "svm.h"
 #include "preprocess.h"
 #include "utils.h"
+#include "bagging.h"
 #include "ensemble_methods.h"
 #include "cross_validation.h"
 #include "model.h"
 #include "matrix.h"
 
-
 const char *model_names[] = {"Decision Tree", "KNN", "SVM"};
-
 const int k = 5;
 
 typedef struct {
@@ -104,15 +107,26 @@ int main() {
         printf("Error: unable to allocate memory for data\n");
         exit(1);
     }
+
+    // Create test data and target values
+    double *target = (double*)malloc(n_samples * sizeof(double));
+    if (target == NULL) {
+        printf("Error: unable to allocate memory for target\n");
+        exit(1);
+    }
+
     for (int i = 0; i < n_samples; i++) {
         data[i] = (double*)malloc(n_features * sizeof(double));
         if (data[i] == NULL) {
             printf("Error: unable to allocate memory for data[%d]\n", i);
             exit(1);
         }
+        // Generate sample feature values
         for (int j = 0; j < n_features; j++) {
             data[i][j] = (double)rand() / RAND_MAX;
         }
+        // Generate binary target values based on features
+        target[i] = (data[i][0] + data[i][1] > 1.0) ? 1.0 : 0.0;
     }
 
     int n_components = 2;
@@ -127,13 +141,19 @@ int main() {
 
     Dataset dataset;
     dataset.X = data;
+    dataset.y = target;
     dataset.n_samples = n_samples;
     dataset.n_features = n_features;
-    dataset.y = NULL;
 
+    // Create and train base models
     Model *decision_tree_model = create_decision_tree();
     Model *knn_model = create_knn();
     Model *svm_model = create_svm();
+
+    // Train base models
+    decision_tree_model->train(decision_tree_model, data, target, n_samples, n_features, 5, 2);
+    knn_model->train(knn_model, data, target, n_samples, n_features, 5, 2);
+    svm_model->train(svm_model, data, target, n_samples, n_features, 5, 2);
 
     Model *models[] = {decision_tree_model, knn_model, svm_model};
     int num_models = 3;
@@ -145,18 +165,28 @@ int main() {
 
     printf("Applying Bagging Ensemble Method:\n");
     Model *bagging_model = bagging(models, &dataset, num_models);
-    double bagging_accuracy = model_evaluate(bagging_model, dataset.X, dataset.n_samples, dataset.n_features);
-    printf("Bagging Accuracy: %.2f\n", bagging_accuracy);
+    if (bagging_model != NULL) {
+        // Train the bagging model
+        bagging_model->train(bagging_model, data, target, n_samples, n_features, 5, 2);
+        double bagging_accuracy = model_evaluate(bagging_model, data, target, n_samples, n_features);
+        printf("Bagging Accuracy: %.2f\n", bagging_accuracy);
+    }
 
     printf("Applying Stacking Ensemble Method:\n");
     Model *stacking_model = stacking(models, &dataset, num_models);
-    double stacking_accuracy = model_evaluate(stacking_model, dataset.X, dataset.n_samples, dataset.n_features);
-    printf("Stacking Accuracy: %.2f\n", stacking_accuracy);
+    if (stacking_model != NULL) {
+        // Train the stacking model
+        stacking_model->train(stacking_model, data, target, n_samples, n_features, 5, 2);
+        double stacking_accuracy = model_evaluate(stacking_model, data, target, n_samples, n_features);
+        printf("Stacking Accuracy: %.2f\n", stacking_accuracy);
+    }
 
+    // Cleanup
     for (int i = 0; i < n_samples; i++) {
         free(data[i]);
     }
     free(data);
+    free(target);
 
     for (int i = 0; i < n_components; i++) {
         free(pca->components[i]);
@@ -171,8 +201,8 @@ int main() {
     free_model(decision_tree_model);
     free_model(knn_model);
     free_model(svm_model);
-    free_model(bagging_model);
-    free_model(stacking_model);
+    if (bagging_model) free_model(bagging_model);
+    if (stacking_model) free_model(stacking_model);
 
     return 0;
 }

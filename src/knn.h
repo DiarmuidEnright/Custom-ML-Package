@@ -1,19 +1,11 @@
 #ifndef KNN_H
 #define KNN_H
 
-#include <stddef.h>
+#include "model.h"
 
-typedef struct {
-    double **X_train;
-    double *y_train;
-    size_t n_samples;
-    size_t n_features;
-} kNN;
-
-kNN* knn_train(double **X_train, double *y_train, size_t n_samples, size_t n_features);
-double knn_predict(kNN *model, double *x);
-void knn_free(kNN *model);
-
-double euclidean_distance(double *a, double *b, size_t n);
+Model* create_knn();
+void knn_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split);
+double knn_predict(Model *self, double *x, int n_features);
+void knn_free(Model *self);
 
 #endif

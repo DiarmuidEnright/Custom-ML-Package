@@ -4,7 +4,6 @@
 #include "model.h"
 #include "dataset.h"
 
-Model* bagging(Model **models, Dataset *data, int num_models);
-Model* stacking(Model **models, Dataset *data, int num_models);
+Model* stacking(Model **models, Dataset *dataset, int num_models);
 
 #endif

@@ -1,7 +1,8 @@
-#include "decision_tree.h"
-#include "gradient_boosting.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include "gradient_boosting.h"
+#include "decision_tree.h"
 
 static void compute_residuals(double *y, double *predictions, double *residuals, size_t n_samples) {
     for (size_t i = 0; i < n_samples; i++) {
@@ -24,8 +25,9 @@ GradientBoosting* gradient_boosting_train(Model *model, double **X, double *y, s
         decision_tree_train(model, X, residuals, n_samples, n_features, max_depth, min_samples_split);
         gb_model->trees[i] = model->current_tree;
         model->current_tree = NULL;
+
         for (size_t j = 0; j < n_samples; j++) {
-            double tree_prediction = decision_tree_predict(gb_model->trees[i]->root, X[j]);
+            double tree_prediction = tree_predict(gb_model->trees[i]->root, X[j]);
             predictions[j] += learning_rate * tree_prediction;
         }
     }
@@ -40,7 +42,7 @@ double gradient_boosting_predict(GradientBoosting *model, double *x) {
     double prediction = 0.0;
 
     for (size_t i = 0; i < model->n_trees; i++) {
-        prediction += model->learning_rate * decision_tree_predict(model->trees[i]->root, x);
+        prediction += model->learning_rate * tree_predict(model->trees[i]->root, x);
     }
 
     return (prediction > 0.5) ? 1 : 0;
@@ -48,7 +50,8 @@ double gradient_boosting_predict(GradientBoosting *model, double *x) {
 
 void gradient_boosting_free(GradientBoosting *model) {
     for (size_t i = 0; i < model->n_trees; i++) {
-        decision_tree_free(model->trees[i]);
+        tree_free(model->trees[i]->root);
+        free(model->trees[i]);
     }
     free(model->trees);
     free(model);

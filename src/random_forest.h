@@ -2,14 +2,17 @@
 #define RANDOM_FOREST_H
 
 #include "model.h"
+#include "decision_tree.h"
+#include <stddef.h>
 
 typedef struct Forest {
     DecisionTree **trees;
-    int n_trees;
+    size_t n_trees;
 } Forest;
 
-Forest* create_forest(int n_trees, int max_depth, int n_features, int n_samples, double **X, double *y);
-void free_forest(Forest *forest);
+// Training and prediction functions
+Forest* random_forest_train(double **X, double *y, size_t n_samples, size_t n_features, size_t n_trees, size_t max_depth, size_t min_samples_split);
 double random_forest_predict(Forest *forest, double *x);
+void random_forest_free(Forest *forest);
 
 #endif

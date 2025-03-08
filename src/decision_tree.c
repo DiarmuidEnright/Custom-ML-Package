@@ -7,7 +7,55 @@
 
 extern int n_classes;
 
-double entropy(double *y, int n_samples) {
+// Public utility functions for other models to use
+double tree_predict(TreeNode *node, double *x) {
+    if (node->value == -1) {
+        return x[node->feature_idx] <= node->threshold
+            ? tree_predict(node->left, x)
+            : tree_predict(node->right, x);
+    } else {
+        return node->value;
+    }
+}
+
+void tree_free(TreeNode *node) {
+    if (node == NULL) return;
+    tree_free(node->left);
+    tree_free(node->right);
+    free(node);
+}
+
+// Model interface functions
+static double model_predict(Model *self, double *x, int n_features) {
+    DecisionTree *tree = (DecisionTree *)self->current_tree;
+    return tree_predict(tree->root, x);
+}
+
+static void model_free(Model *self) {
+    DecisionTree *tree = (DecisionTree *)self->current_tree;
+    if (tree) {
+        tree_free(tree->root);
+        free(tree);
+    }
+    free(self);
+}
+
+DecisionTree* create_decision_tree() {
+    Model *model = (Model *)malloc(sizeof(Model));
+    if (!model) {
+        fprintf(stderr, "Memory allocation failed\n");
+        return NULL;
+    }
+
+    model->train = decision_tree_train;
+    model->predict = model_predict;
+    model->free = model_free;
+    model->current_tree = NULL;
+
+    return (DecisionTree *)model;
+}
+
+static double entropy(double *y, int n_samples) {
     double *counts = calloc(n_classes, sizeof(double));
     if (!counts) {
         fprintf(stderr, "Memory allocation failed\n");
@@ -31,38 +79,20 @@ double entropy(double *y, int n_samples) {
     return entropy_val;
 }
 
-double decision_tree_predict(TreeNode *node, double *x) {
-    if (node->value == -1) {
-        return x[node->feature_idx] <= node->threshold
-            ? decision_tree_predict(node->left, x)
-            : decision_tree_predict(node->right, x);
-    } else {
-        return node->value;
-    }
-}
-
-void decision_tree_free(TreeNode *node) {
-    if (node == NULL) return;
-
-    decision_tree_free(node->left);
-    decision_tree_free(node->right);
-    free(node);
-}
-
-void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split) {
-    DecisionTree *tree = (DecisionTree *)malloc(sizeof(DecisionTree));
-    if (!tree) {
+static TreeNode *create_leaf_node(double value) {
+    TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
+    if (!node) {
         fprintf(stderr, "Memory allocation failed\n");
-        return;
+        return NULL;
     }
 
-    tree->max_depth = max_depth;
-    tree->min_samples_split = min_samples_split;
-    tree->root = decision_tree_create(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
-    self->current_tree = tree;
+    node->value = value;
+    node->left = NULL;
+    node->right = NULL;
+    return node;
 }
 
-double majority_class(double *y, int n_samples) {
+static double majority_class(double *y, int n_samples) {
     double *counts = calloc(n_classes, sizeof(double));
     if (!counts) {
         fprintf(stderr, "Memory allocation failed\n");
@@ -86,7 +116,7 @@ double majority_class(double *y, int n_samples) {
     return majority_class;
 }
 
-TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_features, size_t depth, size_t max_depth, size_t min_samples_split) {
+static TreeNode *tree_create_recursive(double **X, double *y, int n_samples, int n_features, size_t depth, size_t max_depth, size_t min_samples_split) {
     if (depth >= max_depth || n_samples < min_samples_split) {
         return create_leaf_node(majority_class(y, n_samples));
     }
@@ -120,21 +150,21 @@ TreeNode *decision_tree_create(double **X, double *y, int n_samples, int n_featu
     node->value = -1;
     node->feature_idx = best_feature;
     node->threshold = best_threshold;
-    node->left = decision_tree_create(X, y, n_samples / 2, n_features, depth + 1, max_depth, min_samples_split);
-    node->right = decision_tree_create(X, y, n_samples / 2, n_features, depth + 1, max_depth, min_samples_split);
+    node->left = tree_create_recursive(X, y, n_samples / 2, n_features, depth + 1, max_depth, min_samples_split);
+    node->right = tree_create_recursive(X, y, n_samples / 2, n_features, depth + 1, max_depth, min_samples_split);
 
     return node;
 }
 
-TreeNode *create_leaf_node(double value) {
-    TreeNode *node = (TreeNode *)malloc(sizeof(TreeNode));
-    if (!node) {
+void decision_tree_train(Model *self, double **X, double *y, int n_samples, int n_features, size_t max_depth, size_t min_samples_split) {
+    DecisionTree *tree = (DecisionTree *)malloc(sizeof(DecisionTree));
+    if (!tree) {
         fprintf(stderr, "Memory allocation failed\n");
-        return NULL;
+        return;
     }
 
-    node->value = value;
-    node->left = NULL;
-    node->right = NULL;
-    return node;
+    tree->max_depth = max_depth;
+    tree->min_samples_split = min_samples_split;
+    tree->root = tree_create_recursive(X, y, n_samples, n_features, 0, max_depth, min_samples_split);
+    self->current_tree = tree;
 }

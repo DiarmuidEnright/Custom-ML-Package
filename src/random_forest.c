@@ -37,18 +37,48 @@ Forest* random_forest_train(double **X, double *y, size_t n_samples, size_t n_fe
             return NULL;
         }
 
-        DecisionTree *tree = (DecisionTree *)malloc(sizeof(DecisionTree));
-        if (tree == NULL) {
+        Model *tree_model = (Model *)create_decision_tree();
+        if (tree_model == NULL) {
             printf("Memory allocation failed\n");
             free(bootstrap_X);
             free(bootstrap_y);
             random_forest_free(forest);
             return NULL;
         }
-        decision_tree_train((Model *)tree, bootstrap_X, bootstrap_y, n_samples, n_features, max_depth, min_samples_split);
-        forest->trees[i] = tree;
+
+        decision_tree_train(tree_model, bootstrap_X, bootstrap_y, n_samples, n_features, max_depth, min_samples_split);
+        forest->trees[i] = (DecisionTree *)tree_model->current_tree;
+        tree_model->current_tree = NULL;  // Prevent double free
+        free(tree_model);  // Free the model structure but keep the tree
+
+        free(bootstrap_X);
+        free(bootstrap_y);
     }
     return forest;
+}
+
+double random_forest_predict(Forest *forest, double *x) {
+    if (forest == NULL || forest->trees == NULL) {
+        return -1;
+    }
+
+    double *predictions = (double *)malloc(forest->n_trees * sizeof(double));
+    if (!predictions) {
+        return -1;
+    }
+
+    for (size_t i = 0; i < forest->n_trees; i++) {
+        predictions[i] = tree_predict(forest->trees[i]->root, x);
+    }
+
+    // Simple majority voting
+    double sum = 0.0;
+    for (size_t i = 0; i < forest->n_trees; i++) {
+        sum += predictions[i];
+    }
+    free(predictions);
+
+    return (sum / forest->n_trees) >= 0.5 ? 1.0 : 0.0;
 }
 
 void random_forest_free(Forest *forest) {
@@ -56,7 +86,8 @@ void random_forest_free(Forest *forest) {
 
     for (size_t i = 0; i < forest->n_trees; i++) {
         if (forest->trees[i] != NULL) {
-            decision_tree_free((TreeNode *)forest->trees[i]); // Casting to TreeNode* here
+            tree_free(forest->trees[i]->root);
+            free(forest->trees[i]);
         }
     }
     free(forest->trees);

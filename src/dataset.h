@@ -2,8 +2,9 @@
 #define DATASET_H
 
 #include <stddef.h>
+#include "model.h"
 
-typedef struct {
+typedef struct Dataset {
     double **X;
     double *y;
     size_t n_samples;

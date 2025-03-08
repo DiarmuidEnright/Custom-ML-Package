@@ -1,7 +1,8 @@
 #include "model.h"
 #include <stdio.h>
+#include <stdlib.h>
 
-void placeholder_train(Model *self, double **data, double *target, int n_samples, int n_features) {
+void placeholder_train(Model *self, double **data, double *target, int n_samples, int n_features, size_t max_depth, size_t min_samples_split) {
     printf("Training a placeholder model...\n");
 }
 
@@ -15,16 +16,16 @@ void placeholder_free(Model *self) {
     free(self);
 }
 
-double model_evaluate(Model *model, double **data, int n_samples, int n_features) {
-    if (model == NULL || data == NULL) {
-        printf("Error: model or data is NULL\n");
+double model_evaluate(Model *model, double **X, double *y, int n_samples, int n_features) {
+    if (model == NULL || X == NULL || y == NULL) {
+        printf("Error: model, X, or y is NULL\n");
         return -1.0;
     }
 
     int correct = 0;
     for (int i = 0; i < n_samples; i++) {
-        double prediction = model->predict(model, data[i], n_features);
-        if (prediction == data[i][n_features - 1]) {
+        double prediction = model->predict(model, X[i], n_features);
+        if (prediction == y[i]) {
             correct++;
         }
     }
@@ -40,5 +41,13 @@ Model* create_placeholder_model() {
     model->train = placeholder_train;
     model->predict = placeholder_predict;
     model->free = placeholder_free;
+    model->current_tree = NULL;
+    model->_internal = NULL;
     return model;
+}
+
+void free_model(Model *model) {
+    if (model != NULL && model->free != NULL) {
+        model->free(model);
+    }
 }
