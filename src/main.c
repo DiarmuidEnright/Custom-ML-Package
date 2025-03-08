@@ -7,88 +7,24 @@ int n_classes = 2;
 
 #include "pca.h"
 #include "grid_search.h"
-#include "dataset.h"
-#include "decision_tree.h"
-#include "gradient_boosting.h"
-#include "knn.h"
+#include "core/dataset.h"
+#include "ml/decision_tree.h"
+#include "ml/gradient_boosting.h"
+#include "ml/knn.h"
 #include "logical_regression.h"
-#include "random_forest.h"
-#include "svm.h"
-#include "preprocess.h"
-#include "utils.h"
-#include "bagging.h"
-#include "ensemble_methods.h"
-#include "cross_validation.h"
-#include "model.h"
-#include "matrix.h"
+#include "ml/random_forest.h"
+#include "ml/svm.h"
+#include "utils/preprocess.h"
+#include "utils/utils.h"
+#include "ensemble/bagging.h"
+#include "ensemble/ensemble_methods.h"
+#include "utils/cross_validation.h"
+#include "core/model.h"
+#include "utils/matrix.h"
+#include "neural_network.h"
 
 const char *model_names[] = {"Decision Tree", "KNN", "SVM"};
 const int k = 5;
-
-typedef struct {
-    int input_size;
-    int hidden_size;
-    int output_size;
-    double *weights_input_hidden;
-    double *weights_hidden_output;
-    double learning_rate;
-} NeuralNetwork;
-
-double sigmoid(double x) {
-    return 1.0 / (1.0 + exp(-x));
-}
-
-void initialize_weights(double *weights, int size) {
-    for (int i = 0; i < size; i++) {
-        weights[i] = (double)rand() / RAND_MAX;
-    }
-}
-
-NeuralNetwork* initialize_network(int input_size, int hidden_size, int output_size, double learning_rate) {
-    NeuralNetwork *network = (NeuralNetwork*)malloc(sizeof(NeuralNetwork));
-    if (network == NULL) {
-        printf("Error: unable to allocate memory for neural network\n");
-        exit(1);
-    }
-    network->input_size = input_size;
-    network->hidden_size = hidden_size;
-    network->output_size = output_size;
-    network->learning_rate = learning_rate;
-
-    network->weights_input_hidden = (double*)malloc(input_size * hidden_size * sizeof(double));
-    if (network->weights_input_hidden == NULL) {
-        printf("Error: unable to allocate memory for weights_input_hidden\n");
-        exit(1);
-    }
-    network->weights_hidden_output = (double*)malloc(hidden_size * output_size * sizeof(double));
-    if (network->weights_hidden_output == NULL) {
-        printf("Error: unable to allocate memory for weights_hidden_output\n");
-        exit(1);
-    }
-
-    initialize_weights(network->weights_input_hidden, input_size * hidden_size);
-    initialize_weights(network->weights_hidden_output, hidden_size * output_size);
-
-    return network;
-}
-
-void forward(NeuralNetwork *network, double *input, double *hidden, double *output) {
-    for (int i = 0; i < network->hidden_size; i++) {
-        hidden[i] = 0;
-        for (int j = 0; j < network->input_size; j++) {
-            hidden[i] += input[j] * network->weights_input_hidden[j + i * network->input_size];
-        }
-        hidden[i] = sigmoid(hidden[i]);
-    }
-
-    for (int i = 0; i < network->output_size; i++) {
-        output[i] = 0;
-        for (int j = 0; j < network->hidden_size; j++) {
-            output[i] += hidden[j] * network->weights_hidden_output[j + i * network->hidden_size];
-        }
-        output[i] = sigmoid(output[i]);
-    }
-}
 
 int main() {
     printf("Neural Network Example:\n");
@@ -146,7 +82,8 @@ int main() {
     dataset.n_features = n_features;
 
     // Create and train base models
-    Model *decision_tree_model = create_decision_tree();
+    DecisionTree *dt = create_decision_tree();
+    Model *decision_tree_model = (Model *)dt;
     Model *knn_model = create_knn();
     Model *svm_model = create_svm();
 
