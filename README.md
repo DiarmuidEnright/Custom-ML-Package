@@ -28,3 +28,39 @@
 - **Utilities**
   - K-fold cross-validation for robust model evaluation.
   - Grid search for hyperparameter tuning.
+
+
+#Expected output:
+
+Neural Network Example:
+Neural Network Output: 0.716561
+
+- PCA Example:
+- PCA Components:
+0.262453 0.047465 0.736082 
+0.247039 0.982550 0.722660 
+- Performing 5-fold cross-validation on Decision Tree:
+Fold 1 accuracy: 1.00
+Fold 2 accuracy: 1.00
+Fold 3 accuracy: 0.00
+Fold 4 accuracy: 0.00
+Fold 5 accuracy: 1.00
+Average accuracy: 0.60
+- Performing 5-fold cross-validation on KNN:
+Fold 1 accuracy: 1.00
+Fold 2 accuracy: 1.00
+Fold 3 accuracy: 0.00
+Fold 4 accuracy: 0.00
+Fold 5 accuracy: 0.00
+Average accuracy: 0.40
+- Performing 5-fold cross-validation on SVM:
+Fold 1 accuracy: 1.00
+Fold 2 accuracy: 1.00
+Fold 3 accuracy: 0.00
+Fold 4 accuracy: 1.00
+Fold 5 accuracy: 1.00
+Average accuracy: 0.80
+- Applying Bagging Ensemble Method:
+Bagging Accuracy: 1.00
+- Applying Stacking Ensemble Method:
+Stacking Accuracy: 1.00
